@@ -93,9 +93,7 @@ export default function App() {
 
   return (
     <div className="app">
-      <h1>Time left</h1>
-
-      <div className="card">
+      <div className="main">
         <div className="label">Deadline</div>
         <div className="end">{fmtDateTime(end)}</div>
 
