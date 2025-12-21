@@ -11,7 +11,11 @@ function pad2(n: number) {
 }
 
 function fmtDateTime(d: Date) {
-  return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())} ${pad2(d.getHours())}:${pad2(d.getMinutes())}`
+  const hours24 = d.getHours()
+  const hours12 = hours24 % 12 || 12
+  const ampm = hours24 < 12 ? 'AM' : 'PM'
+
+  return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())} ${hours12}:${pad2(d.getMinutes())} ${ampm}`
 }
 
 function toDatetimeLocalValue(d: Date) {
