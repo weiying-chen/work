@@ -17,8 +17,8 @@ const LS_STOPPED = '__stopped__'
 
 // Set true while developing/testing. Set false for real use.
 // If you want this to be dev-only, see note below.
-const IGNORE_WORK_SCHEDULE = true
-// const IGNORE_WORK_SCHEDULE = import.meta.env.DEV
+// const IGNORE_WORK_SCHEDULE = true
+const IGNORE_WORK_SCHEDULE = import.meta.env.DEV
 
 type PickerInput = HTMLInputElement & {
   showPicker?: () => void
