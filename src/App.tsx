@@ -10,6 +10,8 @@ import {
   workMsBetween,
 } from './utils/workTime'
 
+import { fmtDateTime, fmtTime, msToParts, parseDatetimeLocalValue, toDatetimeLocalValue } from './utils/time'
+
 const LS_KEY = 'time-left:end-iso'
 
 // Set true while developing/testing. Set false for real use.
@@ -19,50 +21,6 @@ const IGNORE_WORK_SCHEDULE = true
 
 type PickerInput = HTMLInputElement & {
   showPicker?: () => void
-}
-
-function pad2(n: number) {
-  return String(n).padStart(2, '0')
-}
-
-function fmtDateTime(d: Date) {
-  const hours24 = d.getHours()
-  const hours12 = hours24 % 12 || 12
-  const ampm = hours24 < 12 ? 'AM' : 'PM'
-  return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())} ${hours12}:${pad2(d.getMinutes())} ${ampm}`
-}
-
-function fmtTime(d: Date) {
-  const hours24 = d.getHours()
-  const hours12 = hours24 % 12 || 12
-  const ampm = hours24 < 12 ? 'AM' : 'PM'
-  return `${hours12}:${pad2(d.getMinutes())} ${ampm}`
-}
-
-function toDatetimeLocalValue(d: Date) {
-  return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}T${pad2(d.getHours())}:${pad2(d.getMinutes())}`
-}
-
-function parseDatetimeLocalValue(v: string) {
-  const d = new Date(v)
-  return Number.isNaN(d.getTime()) ? null : d
-}
-
-function msToParts(ms: number) {
-  const abs = Math.abs(ms)
-
-  const totalSeconds = Math.floor(abs / 1000)
-  const seconds = totalSeconds % 60
-
-  const totalMinutes = Math.floor(totalSeconds / 60)
-  const minutes = totalMinutes % 60
-
-  const totalHours = Math.floor(totalMinutes / 60)
-  const hours = totalHours % 24
-
-  const days = Math.floor(totalHours / 24)
-
-  return { days, hours, minutes, seconds }
 }
 
 export default function App() {
