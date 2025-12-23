@@ -15,6 +15,9 @@ import { fmtDateTime, fmtTime, msToParts, parseDatetimeLocalValue, toDatetimeLoc
 const LS_KEY = 'time-left:end-iso'
 const LS_STOPPED = '__stopped__'
 
+const STEP_MIN = 5
+const STEP_MS = STEP_MIN * 60000
+
 // Set true while developing/testing. Set false for real use.
 // If you want this to be dev-only, see note below.
 // const IGNORE_WORK_SCHEDULE = true
@@ -29,6 +32,111 @@ function defaultEndFromNow(base: Date) {
   d.setHours(d.getHours() + 6)
   d.setSeconds(0, 0)
   return d
+}
+
+function clampDateMin(d: Date, min: Date) {
+  return d.getTime() < min.getTime() ? new Date(min) : d
+}
+
+// Move the calendar deadline so that "work time between now and end" changes by deltaMin.
+// This means +1h always gives +1h of work time, even across breaks/overnight/weekends.
+function shiftEndByWorkMinutes(now: Date, prevEnd: Date | null, deltaMin: number) {
+  // If we were stopped, treat base end as now.
+  const baseEnd = prevEnd ? new Date(prevEnd) : new Date(now)
+
+  // Never let end be before now.
+  let cursor = clampDateMin(baseEnd, now)
+
+  // Current "countable end" and current work between now and that end.
+  const currentEffective = endOfLastWorkBlockBefore(cursor, DEFAULT_WORK_BLOCKS, DEFAULT_HOLIDAYS)
+  const currentWork = workMsBetween(now, currentEffective, DEFAULT_WORK_BLOCKS, DEFAULT_HOLIDAYS)
+
+  const want = Math.max(0, currentWork + deltaMin * 60000)
+
+  // Fast path: if want is 0, collapse end to now (so remaining becomes 0).
+  if (want === 0) return new Date(now)
+
+  // If we need more work time, walk forward until we have enough.
+  if (want > currentWork) {
+    // Ensure we start from a point that can actually accumulate future work time.
+    cursor = new Date(Math.max(cursor.getTime(), now.getTime()))
+
+    for (let i = 0; i < 5000; i++) {
+      const eff = endOfLastWorkBlockBefore(cursor, DEFAULT_WORK_BLOCKS, DEFAULT_HOLIDAYS)
+      const got = workMsBetween(now, eff, DEFAULT_WORK_BLOCKS, DEFAULT_HOLIDAYS)
+      if (got >= want) return cursor
+
+      // Jump strategy:
+      // - If cursor is in work time, jump STEP minutes.
+      // - Otherwise jump to next resume time.
+      if (isInWorkTime(cursor, DEFAULT_WORK_BLOCKS, DEFAULT_HOLIDAYS)) {
+        cursor = new Date(cursor.getTime() + STEP_MS)
+      } else {
+        const nr = nextResumeAt(cursor, DEFAULT_WORK_BLOCKS, DEFAULT_HOLIDAYS)
+        cursor = nr.getTime() === cursor.getTime() ? new Date(cursor.getTime() + 60 * 60000) : nr
+      }
+    }
+
+    return cursor
+  }
+
+  // If we need less work time, walk backward until we're <= want, then tighten forward.
+  if (want < currentWork) {
+    // Start from the current end, but not before now.
+    cursor = new Date(Math.max(cursor.getTime(), now.getTime()))
+
+    // Step backward until got <= want
+    for (let i = 0; i < 5000; i++) {
+      const eff = endOfLastWorkBlockBefore(cursor, DEFAULT_WORK_BLOCKS, DEFAULT_HOLIDAYS)
+      const got = workMsBetween(now, eff, DEFAULT_WORK_BLOCKS, DEFAULT_HOLIDAYS)
+      if (got <= want) break
+
+      // Step backward:
+      // - If inside work time, go back STEP minutes.
+      // - Otherwise, go to end of the last work block before cursor (minus 1ms to avoid looping).
+      if (isInWorkTime(cursor, DEFAULT_WORK_BLOCKS, DEFAULT_HOLIDAYS)) {
+        cursor = new Date(cursor.getTime() - STEP_MS)
+      } else {
+        const back = new Date(cursor.getTime() - 1)
+        const lastEnd = endOfLastWorkBlockBefore(back, DEFAULT_WORK_BLOCKS, DEFAULT_HOLIDAYS)
+        // If lastEnd doesn't move, fall back to -1h to guarantee progress.
+        cursor =
+          lastEnd.getTime() === cursor.getTime() ? new Date(cursor.getTime() - 60 * 60000) : new Date(lastEnd)
+      }
+
+      if (cursor.getTime() < now.getTime()) {
+        cursor = new Date(now)
+        break
+      }
+    }
+
+    // Tighten forward to the earliest cursor that still gives >= want.
+    // This avoids overshooting backward too much.
+    let tighten = new Date(cursor)
+    for (let i = 0; i < 200; i++) {
+      const eff = endOfLastWorkBlockBefore(tighten, DEFAULT_WORK_BLOCKS, DEFAULT_HOLIDAYS)
+      const got = workMsBetween(now, eff, DEFAULT_WORK_BLOCKS, DEFAULT_HOLIDAYS)
+      if (got >= want) {
+        // Move slightly earlier if possible
+        const earlier = new Date(tighten.getTime() - STEP_MS)
+        if (earlier.getTime() < now.getTime()) return tighten
+
+        const effEarlier = endOfLastWorkBlockBefore(earlier, DEFAULT_WORK_BLOCKS, DEFAULT_HOLIDAYS)
+        const gotEarlier = workMsBetween(now, effEarlier, DEFAULT_WORK_BLOCKS, DEFAULT_HOLIDAYS)
+
+        if (gotEarlier >= want) tighten = earlier
+        else return tighten
+      } else {
+        // Not enough, move forward a bit
+        tighten = new Date(tighten.getTime() + 1 * 60000)
+      }
+    }
+
+    return tighten
+  }
+
+  // want === currentWork, no change
+  return cursor
 }
 
 export default function App() {
@@ -105,9 +213,14 @@ export default function App() {
 
   const addMinutes = (m: number) => {
     setEnd((prev) => {
-      // If stopped and user clicks, start from now.
-      const base = prev ?? new Date()
-      return new Date(base.getTime() + m * 60000)
+      // If we are ignoring schedule (dev), keep the old simple behavior.
+      if (IGNORE_WORK_SCHEDULE) {
+        const base = prev ?? new Date()
+        return new Date(base.getTime() + m * 60000)
+      }
+
+      // Real behavior: add/subtract WORK minutes from "remaining work time".
+      return shiftEndByWorkMinutes(now, prev, m)
     })
   }
 
