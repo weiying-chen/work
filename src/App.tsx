@@ -105,11 +105,13 @@ export default function App() {
 
   const addMinutes = (m: number) => {
     setEnd((prev) => {
-      // If stopped and user clicks +1h/-1h, start from now.
+      // If stopped and user clicks, start from now.
       const base = prev ?? new Date()
       return new Date(base.getTime() + m * 60000)
     })
   }
+
+  const addHours = (h: number) => addMinutes(h * 60)
 
   const onSetEnd = (v: string) => {
     const d = parseDatetimeLocalValue(v)
@@ -121,8 +123,6 @@ export default function App() {
     if (!el) return
 
     if (stopped) {
-      // If stopped, create an end so the native picker has a value,
-      // then open the picker on the next frame.
       const d = defaultEndFromNow(now)
       setEnd(d)
 
@@ -171,8 +171,11 @@ export default function App() {
       </div>
 
       <div className="controls">
-        <button onClick={() => addMinutes(60)}>+1h</button>
-        <button onClick={() => addMinutes(-60)}>-1h</button>
+        <button onClick={() => addHours(1)}>+1h</button>
+        <button onClick={() => addHours(2)}>+2h</button>
+        <button onClick={() => addHours(4)}>+4h</button>
+        <button onClick={() => addHours(6)}>+6h</button>
+        <button onClick={() => addHours(-1)}>-1h</button>
 
         <span className="endPickerWrap">
           <input
