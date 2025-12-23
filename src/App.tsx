@@ -1,5 +1,15 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 
+import {
+  DEFAULT_HOLIDAYS,
+  DEFAULT_WORK_BLOCKS,
+  endOfLastWorkBlockBefore,
+  isInWorkTime,
+  nextResumeAt,
+  pauseReason,
+  workMsBetween,
+} from './utils/workTime'
+
 const LS_KEY = 'time-left:end-iso'
 
 type PickerInput = HTMLInputElement & {
@@ -14,8 +24,14 @@ function fmtDateTime(d: Date) {
   const hours24 = d.getHours()
   const hours12 = hours24 % 12 || 12
   const ampm = hours24 < 12 ? 'AM' : 'PM'
-
   return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())} ${hours12}:${pad2(d.getMinutes())} ${ampm}`
+}
+
+function fmtTime(d: Date) {
+  const hours24 = d.getHours()
+  const hours12 = hours24 % 12 || 12
+  const ampm = hours24 < 12 ? 'AM' : 'PM'
+  return `${hours12}:${pad2(d.getMinutes())} ${ampm}`
 }
 
 function toDatetimeLocalValue(d: Date) {
@@ -71,9 +87,29 @@ export default function App() {
     localStorage.setItem(LS_KEY, end.toISOString())
   }, [end])
 
-  const msLeft = end.getTime() - now.getTime()
-  const isOverdue = msLeft < 0
-  const parts = useMemo(() => msToParts(msLeft), [msLeft])
+  const effectiveEnd = useMemo(() => {
+    return endOfLastWorkBlockBefore(end, DEFAULT_WORK_BLOCKS, DEFAULT_HOLIDAYS)
+  }, [end])
+
+  const workMsLeft = useMemo(() => {
+    if (effectiveEnd.getTime() <= now.getTime()) return 0
+    return workMsBetween(now, effectiveEnd, DEFAULT_WORK_BLOCKS, DEFAULT_HOLIDAYS)
+  }, [now, effectiveEnd])
+
+  const isOverdue = now.getTime() > end.getTime()
+  const parts = useMemo(() => msToParts(workMsLeft), [workMsLeft])
+
+  const paused = useMemo(() => {
+    return !isInWorkTime(now, DEFAULT_WORK_BLOCKS, DEFAULT_HOLIDAYS)
+  }, [now])
+
+  const reason = useMemo(() => {
+    return pauseReason(now, DEFAULT_WORK_BLOCKS, DEFAULT_HOLIDAYS)
+  }, [now])
+
+  const resumesAt = useMemo(() => {
+    return nextResumeAt(now, DEFAULT_WORK_BLOCKS, DEFAULT_HOLIDAYS)
+  }, [now])
 
   const addMinutes = (m: number) => {
     setEnd((prev) => new Date(prev.getTime() + m * 60000))
@@ -91,20 +127,33 @@ export default function App() {
     el.showPicker?.()
   }
 
+  const pauseText = useMemo(() => {
+    if (!paused) return null
+
+    const at = fmtDateTime(resumesAt)
+    if (reason === 'break') return `Paused—break time. Resumes at ${fmtTime(resumesAt)}.`
+    if (reason === 'before') return `Paused—outside working hours. Resumes at ${fmtTime(resumesAt)}.`
+    if (reason === 'after') return `Paused—outside working hours. Resumes at ${at}.`
+    if (reason === 'weekend') return `Paused—weekend. Resumes at ${at}.`
+    if (reason === 'holiday') return `Paused—holiday. Resumes at ${at}.`
+    return `Paused. Resumes at ${at}.`
+  }, [paused, reason, resumesAt])
+
   return (
     <div className="app">
       <div className="main">
         <div className="label">Deadline</div>
         <div className="end">{fmtDateTime(end)}</div>
 
-        <div className="label">Remaining</div>
+        <div className="label">Remaining (work time)</div>
         <div className="remaining">
-          {isOverdue ? '-' : ''}
           {parts.days > 0 && `${parts.days}d `}
           {parts.hours}h {parts.minutes}m {parts.seconds}s
         </div>
 
-        {isOverdue && <div className="overdue">Overdue</div>}
+        {paused && <div className="overdue">{pauseText}</div>}
+
+        {isOverdue && <div className="overdue">Overdue (calendar time)</div>}
       </div>
 
       <div className="controls">
