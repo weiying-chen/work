@@ -55,15 +55,13 @@ export default function App() {
   }, [end])
 
   const workMsLeft = useMemo(() => {
-    // Test mode: just do raw calendar countdown to effectiveEnd.
     if (IGNORE_WORK_SCHEDULE) {
-      return Math.max(0, effectiveEnd.getTime() - now.getTime())
+      return Math.max(0, end.getTime() - now.getTime())
     }
 
-    // Real mode: count only work-time between now and effectiveEnd.
     if (effectiveEnd.getTime() <= now.getTime()) return 0
     return workMsBetween(now, effectiveEnd, DEFAULT_WORK_BLOCKS, DEFAULT_HOLIDAYS)
-  }, [now, effectiveEnd])
+  }, [now, end, effectiveEnd])
 
   const isOverdue = now.getTime() > end.getTime()
   const parts = useMemo(() => msToParts(workMsLeft), [workMsLeft])
