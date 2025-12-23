@@ -12,6 +12,11 @@ import {
 
 const LS_KEY = 'time-left:end-iso'
 
+// Set true while developing/testing. Set false for real use.
+// If you want this to be dev-only, see note below.
+const IGNORE_WORK_SCHEDULE = true
+// const IGNORE_WORK_SCHEDULE = import.meta.env.DEV
+
 type PickerInput = HTMLInputElement & {
   showPicker?: () => void
 }
@@ -92,6 +97,12 @@ export default function App() {
   }, [end])
 
   const workMsLeft = useMemo(() => {
+    // Test mode: just do raw calendar countdown to effectiveEnd.
+    if (IGNORE_WORK_SCHEDULE) {
+      return Math.max(0, effectiveEnd.getTime() - now.getTime())
+    }
+
+    // Real mode: count only work-time between now and effectiveEnd.
     if (effectiveEnd.getTime() <= now.getTime()) return 0
     return workMsBetween(now, effectiveEnd, DEFAULT_WORK_BLOCKS, DEFAULT_HOLIDAYS)
   }, [now, effectiveEnd])
@@ -100,14 +111,17 @@ export default function App() {
   const parts = useMemo(() => msToParts(workMsLeft), [workMsLeft])
 
   const paused = useMemo(() => {
+    if (IGNORE_WORK_SCHEDULE) return false
     return !isInWorkTime(now, DEFAULT_WORK_BLOCKS, DEFAULT_HOLIDAYS)
   }, [now])
 
   const reason = useMemo(() => {
+    if (IGNORE_WORK_SCHEDULE) return null
     return pauseReason(now, DEFAULT_WORK_BLOCKS, DEFAULT_HOLIDAYS)
   }, [now])
 
   const resumesAt = useMemo(() => {
+    if (IGNORE_WORK_SCHEDULE) return now
     return nextResumeAt(now, DEFAULT_WORK_BLOCKS, DEFAULT_HOLIDAYS)
   }, [now])
 
