@@ -105,3 +105,27 @@ export function addWorkMinutes(start: Date, minutes: number, blocks: WorkBlock[]
 
   return cursor
 }
+
+export function shouldShowEarlyFinishReminder(now: Date, end: Date) {
+  const dayStart = new Date(now)
+  dayStart.setHours(0, 0, 0, 0)
+
+  const endDay = new Date(end)
+  endDay.setHours(0, 0, 0, 0)
+
+  if (dayStart.getTime() !== endDay.getTime()) return false
+
+  const reminderStart = new Date(dayStart)
+  reminderStart.setHours(8, 30, 0, 0)
+  const reminderEnd = new Date(dayStart)
+  reminderEnd.setHours(9, 0, 0, 0)
+
+  const finishCutoff = new Date(dayStart)
+  finishCutoff.setHours(17, 30, 0, 0)
+
+  return (
+    now.getTime() >= reminderStart.getTime() &&
+    now.getTime() < reminderEnd.getTime() &&
+    end.getTime() <= finishCutoff.getTime()
+  )
+}

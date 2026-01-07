@@ -1,6 +1,12 @@
 import { describe, expect, it } from 'vitest'
 
-import { addWorkMinutes, isInWorkTime, nextWorkStart, workMsBetween } from './workTime'
+import {
+  addWorkMinutes,
+  isInWorkTime,
+  nextWorkStart,
+  shouldShowEarlyFinishReminder,
+  workMsBetween,
+} from './workTime'
 
 function at(h: number, m: number) {
   return new Date(2025, 0, 2, h, m, 0, 0)
@@ -65,5 +71,38 @@ describe('nextWorkStart', () => {
     const next = nextWorkStart(start)
     expect(next.getHours()).toBe(13)
     expect(next.getMinutes()).toBe(0)
+  })
+})
+
+describe('shouldShowEarlyFinishReminder', () => {
+  it('shows between 8:30 and 9:00 when deadline ends by 17:30', () => {
+    const now = at(8, 35)
+    const end = at(17, 0)
+    expect(shouldShowEarlyFinishReminder(now, end)).toBe(true)
+  })
+
+  it('does not show before 8:30', () => {
+    const now = at(8, 15)
+    const end = at(17, 0)
+    expect(shouldShowEarlyFinishReminder(now, end)).toBe(false)
+  })
+
+  it('does not show after 9:00', () => {
+    const now = at(9, 1)
+    const end = at(17, 0)
+    expect(shouldShowEarlyFinishReminder(now, end)).toBe(false)
+  })
+
+  it('does not show when deadline is after 17:30', () => {
+    const now = at(8, 40)
+    const end = at(17, 45)
+    expect(shouldShowEarlyFinishReminder(now, end)).toBe(false)
+  })
+
+  it('does not show when deadline is on another day', () => {
+    const now = at(8, 40)
+    const end = at(8, 40)
+    end.setDate(end.getDate() + 1)
+    expect(shouldShowEarlyFinishReminder(now, end)).toBe(false)
   })
 })

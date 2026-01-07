@@ -32,25 +32,55 @@ body {
 .label {
   font-size: 18px;
   opacity: 0.5;
-  margin-bottom: 6px;
+  margin-bottom: 4px;
 }
 
 .end {
   font-size: 34px;
   font-weight: 600;
+  margin-bottom: 0;
+}
+
+.previous {
+  font-size: 22px;
+  font-weight: 600;
+  margin-bottom: 0;
+}
+
+.previousMeta {
+  font-size: 12px;
+  opacity: 0.6;
+  margin-bottom: 6px;
+}
+
+.previousNote {
+  font-size: 13px;
+  opacity: 0.8;
   margin-bottom: 12px;
+  white-space: pre-wrap;
 }
 
 .remaining {
   font-size: 68px;
   font-weight: 700;
   line-height: 1.1;
+  margin-bottom: 0;
 }
 
 .overdue {
-  margin-top: 8px;
+  margin-top: 10px;
   font-size: 13px;
   color: #ff6b6b;
+}
+
+.reminder {
+  margin-top: 10px;
+  font-size: 14px;
+  color: #f6c453;
+}
+
+.block {
+  margin-bottom: 18px;
 }
 
 /* Controls */
@@ -73,6 +103,105 @@ button {
 
 button:hover {
   background: #222633;
+}
+
+input {
+  background: #11141a;
+  color: #e6e6e6;
+  border: 1px solid #333;
+  border-radius: 10px;
+  padding: 8px 12px;
+  font-family: inherit;
+  resize: vertical;
+}
+
+.message {
+  border: 1px solid #2a2f3b;
+  border-radius: 12px;
+  padding: 16px;
+  text-align: center;
+}
+
+.messageFields {
+  display: grid;
+  gap: 8px;
+  max-width: 640px;
+  margin: 0 auto 10px;
+}
+
+.reasonFields {
+  display: grid;
+  gap: 8px;
+  max-width: 640px;
+  margin: 0 auto 10px;
+  grid-template-columns: 1fr 120px auto;
+}
+
+.reasonList {
+  max-width: 640px;
+  margin: 0 auto 10px;
+  display: grid;
+  gap: 6px;
+}
+
+.reasonRow {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: 8px;
+  align-items: center;
+  border: 1px solid #2a2f3b;
+  border-radius: 10px;
+  padding: 6px 10px;
+}
+
+.reasonActions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.reasonTotal {
+  font-size: 13px;
+  opacity: 0.7;
+}
+
+.messagePreview {
+  width: 100%;
+  max-width: 640px;
+  margin: 0 auto 10px;
+  border: 1px solid #2a2f3b;
+  border-radius: 10px;
+  padding: 10px 12px;
+  text-align: left;
+  white-space: pre-wrap;
+}
+
+.messageActions {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  align-items: center;
+}
+
+.copyStatus {
+  font-size: 12px;
+  opacity: 0.8;
+}
+
+@media (max-width: 640px) {
+  .reasonFields {
+    grid-template-columns: 1fr;
+  }
+
+  .reasonRow {
+    grid-template-columns: 1fr auto;
+  }
+
+  .reasonRow button {
+    grid-column: 1 / -1;
+  }
 }
 
 /* End picker button */
