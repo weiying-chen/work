@@ -14,6 +14,7 @@ import {
   isInWorkTime,
   nextWorkStart,
   shouldShowEarlyFinishReminder,
+  shouldShowTeamsReminder,
   workMsBetween,
 } from './utils/workTime'
 
@@ -31,6 +32,8 @@ const LS_MESSAGE_TASK_KEY = 'deadline:message-task'
 const LS_MESSAGE_ASSIGNEE_KEY = 'deadline:message-assignee'
 const LS_REMINDER_NOTIFIED_KEY = 'deadline:reminder-notified'
 const LS_REMINDER_REQUESTED_KEY = 'deadline:reminder-requested'
+const LS_TEAMS_REMINDER_NOTIFIED_KEY = 'deadline:teams-reminder-notified'
+const LS_TEAMS_REMINDER_REQUESTED_KEY = 'deadline:teams-reminder-requested'
 
 function readStoredDate(key: string) {
   const saved = localStorage.getItem(key)
@@ -129,6 +132,7 @@ export default function App() {
     () => shouldShowEarlyFinishReminder(now, end),
     [end, now]
   )
+  const showTeamsReminder = useMemo(() => shouldShowTeamsReminder(now, end), [end, now])
 
   useEffect(() => {
     if (!showEarlyFinishReminder) return
@@ -158,6 +162,35 @@ export default function App() {
       if (permission === 'granted') sendNotification()
     })
   }, [end, now, showEarlyFinishReminder])
+
+  useEffect(() => {
+    if (!showTeamsReminder) return
+    if (typeof Notification === 'undefined') return
+
+    const todayKey = dateKey(now)
+    if (localStorage.getItem(LS_TEAMS_REMINDER_NOTIFIED_KEY) === todayKey) return
+
+    const sendNotification = () => {
+      new Notification('Reminder', {
+        body: 'Post the Teams update.',
+      })
+      localStorage.setItem(LS_TEAMS_REMINDER_NOTIFIED_KEY, todayKey)
+    }
+
+    if (Notification.permission === 'granted') {
+      sendNotification()
+      return
+    }
+
+    if (Notification.permission === 'denied') return
+
+    if (localStorage.getItem(LS_TEAMS_REMINDER_REQUESTED_KEY) === todayKey) return
+    localStorage.setItem(LS_TEAMS_REMINDER_REQUESTED_KEY, todayKey)
+
+    Notification.requestPermission().then((permission) => {
+      if (permission === 'granted') sendNotification()
+    })
+  }, [end, now, showTeamsReminder])
 
   useEffect(() => {
     localStorage.setItem(LS_MESSAGE_ASSIGNEE_KEY, messageAssignee)
@@ -274,6 +307,7 @@ export default function App() {
         {showEarlyFinishReminder && (
           <div className="reminder">Reminder: ask for more work before 9:00 AM.</div>
         )}
+        {showTeamsReminder && <div className="reminder">Reminder: post the Teams update.</div>}
         {!isInWorkTime(now) && <div className="overdue">Counting from {fmtTime(workStartAt)}.</div>}
       </div>
 

@@ -5,6 +5,7 @@ import {
   isInWorkTime,
   nextWorkStart,
   shouldShowEarlyFinishReminder,
+  shouldShowTeamsReminder,
   workMsBetween,
 } from './workTime'
 
@@ -104,5 +105,32 @@ describe('shouldShowEarlyFinishReminder', () => {
     const end = at(8, 40)
     end.setDate(end.getDate() + 1)
     expect(shouldShowEarlyFinishReminder(now, end)).toBe(false)
+  })
+})
+
+describe('shouldShowTeamsReminder', () => {
+  it('shows at 5:00 when the deadline spills past 17:30', () => {
+    const now = at(17, 2)
+    const end = at(18, 0)
+    expect(shouldShowTeamsReminder(now, end)).toBe(true)
+  })
+
+  it('shows at 5:00 when the deadline is on a later day', () => {
+    const now = at(17, 3)
+    const end = at(9, 0)
+    end.setDate(end.getDate() + 1)
+    expect(shouldShowTeamsReminder(now, end)).toBe(true)
+  })
+
+  it('shows one hour before a same-day deadline ending by 17:30', () => {
+    const now = at(15, 10)
+    const end = at(16, 5)
+    expect(shouldShowTeamsReminder(now, end)).toBe(true)
+  })
+
+  it('does not show outside the reminder window', () => {
+    const now = at(14, 30)
+    const end = at(16, 5)
+    expect(shouldShowTeamsReminder(now, end)).toBe(false)
   })
 })
