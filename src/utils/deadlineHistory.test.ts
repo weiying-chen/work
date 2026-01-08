@@ -26,10 +26,10 @@ describe('formatTeamsMessage', () => {
     })
 
     expect(message).toBe(
-      '今日做其他事時間是 60分\n\n' +
+      '今日做其他事時間是 1時\n\n' +
         '討論小編文 45分\n' +
         '其他任務 15分\n\n' +
-        '心靈講座（看見自己的天才 - 盧蘇偉），deadline由 1/8（三）14:25， 延後至1/8（三）15:10， 請Syharn Shen幫我確認，謝謝。'
+        '心靈講座（看見自己的天才 - 盧蘇偉），deadline由1/8（三）14:25，延後至1/8（三）15:10，請Syharn Shen幫我確認，謝謝。'
     )
   })
 
@@ -38,8 +38,6 @@ describe('formatTeamsMessage', () => {
     const next = new Date(2025, 0, 8, 14, 25)
     const message = formatTeamsMessage({ previous, next })
 
-    expect(message).toBe(
-      'deadline由 1/8（三）15:10， 提前至1/8（三）14:25，謝謝。'
-    )
+    expect(message).toBe('deadline由1/8（三）15:10，提前至1/8（三）14:25，謝謝。')
   })
 })
