@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 
-import { formatDuration, formatTeamsMessage, type ReasonEntry } from './utils/deadlineHistory'
+import { formatTeamsMessage, type ReasonEntry } from './utils/deadlineHistory'
 import {
   fmtDateTime,
   fmtTime,
@@ -318,7 +318,7 @@ export default function App() {
           />
 
           <button onClick={openPicker} className="endButton" aria-label="Change end time">
-            End <span className="icon">🗓️</span>
+            Set deadline <span className="icon">🗓️</span>
           </button>
         </span>
 
@@ -329,6 +329,23 @@ export default function App() {
 
       <div className="message">
         <div className="label">Add time by reason</div>
+        <div className="messageFields">
+          <input
+            type="text"
+            value={messageTask}
+            onChange={(e) => setMessageTask(e.target.value)}
+            placeholder="Task (optional)"
+            aria-label="Task name"
+          />
+          <input
+            type="text"
+            value={messageAssignee}
+            onChange={(e) => setMessageAssignee(e.target.value)}
+            placeholder="Confirm by (optional)"
+            aria-label="Confirm by"
+          />
+        </div>
+
         <div className="reasonFields">
           <input
             type="text"
@@ -363,29 +380,6 @@ export default function App() {
             ))}
           </div>
         )}
-
-        <div className="reasonActions">
-          <div className="reasonTotal">
-            Total: {formatDuration(reasonDrafts.reduce((sum, reason) => sum + reason.minutes, 0))}
-          </div>
-        </div>
-
-        <div className="messageFields">
-          <input
-            type="text"
-            value={messageTask}
-            onChange={(e) => setMessageTask(e.target.value)}
-            placeholder="Task (optional)"
-            aria-label="Task name"
-          />
-          <input
-            type="text"
-            value={messageAssignee}
-            onChange={(e) => setMessageAssignee(e.target.value)}
-            placeholder="Confirm by (optional)"
-            aria-label="Confirm by"
-          />
-        </div>
 
         <div className="messagePreview" aria-label="Teams message preview">
           {teamsMessage || 'Add time to generate a Teams message preview.'}

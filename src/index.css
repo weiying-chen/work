@@ -93,7 +93,7 @@ body {
 }
 
 button {
-  background: #1a1d24;
+  background: #2a2f3b;
   color: #e6e6e6;
   border: 1px solid #444;
   border-radius: 10px;
@@ -116,7 +116,6 @@ input {
 }
 
 .message {
-  border: 1px solid #2a2f3b;
   border-radius: 12px;
   padding: 16px;
   text-align: center;
@@ -154,23 +153,6 @@ input {
   border-radius: 10px;
   padding: 6px 10px;
   text-align: left;
-}
-
-.reasonActions {
-  display: flex;
-  gap: 12px;
-  justify-content: flex-end;
-  align-items: center;
-  margin-bottom: 12px;
-  max-width: 640px;
-  margin-left: auto;
-  margin-right: auto;
-}
-
-.reasonTotal {
-  font-size: 16px;
-  font-weight: 600;
-  opacity: 0.85;
 }
 
 .messagePreview {
