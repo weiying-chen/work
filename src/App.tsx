@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 
-import { formatTeamsMessage, type ReasonEntry } from './utils/deadlineHistory'
+import { formatDuration, formatTeamsMessage, type ReasonEntry } from './utils/deadlineHistory'
 import {
   fmtDateTime,
   fmtTime,
@@ -279,22 +279,17 @@ export default function App() {
     }
   }
 
-  const clearReasons = () => {
-    setReasonDrafts([])
-    setChangeBaseEnd(null)
-  }
-
   return (
     <div className="app">
       <div className="main">
         <div className="block">
-          <div className="label">Deadline</div>
-          <div className="end">{fmtDateTime(end)}</div>
+          <div className="label">Previous deadline</div>
+          <div className="previous">{previousEnd ? fmtDateTime(previousEnd) : '—'}</div>
         </div>
 
         <div className="block">
-          <div className="label">Previous deadline</div>
-          <div className="previous">{previousEnd ? fmtDateTime(previousEnd) : '—'}</div>
+          <div className="label">Deadline</div>
+          <div className="end">{fmtDateTime(end)}</div>
         </div>
 
         <div className="block">
@@ -371,11 +366,8 @@ export default function App() {
 
         <div className="reasonActions">
           <div className="reasonTotal">
-            Total: {reasonDrafts.reduce((sum, reason) => sum + reason.minutes, 0)}分
+            Total: {formatDuration(reasonDrafts.reduce((sum, reason) => sum + reason.minutes, 0))}
           </div>
-          <button onClick={clearReasons} disabled={reasonDrafts.length === 0}>
-            Clear reasons
-          </button>
         </div>
 
         <div className="messageFields">

@@ -30,7 +30,7 @@ function formatReasonLine(reason: ReasonEntry) {
   return `${trimmed} ${formatDuration(reason.minutes)}`
 }
 
-function formatDuration(totalMinutes: number) {
+export function formatDuration(totalMinutes: number) {
   const hours = Math.floor(totalMinutes / 60)
   const minutes = totalMinutes % 60
   if (hours > 0 && minutes > 0) return `${hours}時${minutes}分`

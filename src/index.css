@@ -142,6 +142,7 @@ input {
   margin: 0 auto 10px;
   display: grid;
   gap: 6px;
+  text-align: left;
 }
 
 .reasonRow {
@@ -152,19 +153,24 @@ input {
   border: 1px solid #2a2f3b;
   border-radius: 10px;
   padding: 6px 10px;
+  text-align: left;
 }
 
 .reasonActions {
   display: flex;
   gap: 12px;
-  justify-content: center;
+  justify-content: flex-end;
   align-items: center;
   margin-bottom: 12px;
+  max-width: 640px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .reasonTotal {
-  font-size: 13px;
-  opacity: 0.7;
+  font-size: 16px;
+  font-weight: 600;
+  opacity: 0.85;
 }
 
 .messagePreview {
