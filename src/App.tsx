@@ -30,6 +30,7 @@ const LS_REASON_DRAFT_KEY = 'deadline:reason-draft'
 const LS_CHANGE_BASE_KEY = 'deadline:change-base-iso'
 const LS_MESSAGE_TASK_KEY = 'deadline:message-task'
 const LS_MESSAGE_ASSIGNEE_KEY = 'deadline:message-assignee'
+const LS_DAILY_CLEAR_KEY = 'deadline:daily-clear'
 const LS_REMINDER_NOTIFIED_KEY = 'deadline:reminder-notified'
 const LS_REMINDER_REQUESTED_KEY = 'deadline:reminder-requested'
 const LS_TEAMS_REMINDER_NOTIFIED_KEY = 'deadline:teams-reminder-notified'
@@ -124,6 +125,24 @@ export default function App() {
   useEffect(() => {
     localStorage.setItem(LS_MESSAGE_TASK_KEY, messageTask)
   }, [messageTask])
+
+  useEffect(() => {
+    const todayKey = dateKey(now)
+    if (localStorage.getItem(LS_DAILY_CLEAR_KEY) === todayKey) return
+
+    const cutoff = new Date(now)
+    cutoff.setHours(17, 30, 0, 0)
+    if (now.getTime() < cutoff.getTime()) return
+
+    localStorage.setItem(LS_DAILY_CLEAR_KEY, todayKey)
+    setReasonDrafts([])
+    setReasonText('')
+    setReasonMinutes('')
+    setChangeBaseEnd(null)
+    setPreviousReasons([])
+    setMessageTask('')
+    setMessageAssignee('')
+  }, [now])
 
   const workMsLeft = useMemo(() => workMsBetween(now, end), [now, end])
   const parts = useMemo(() => msToParts(workMsLeft), [workMsLeft])
