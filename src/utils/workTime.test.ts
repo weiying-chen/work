@@ -100,6 +100,12 @@ describe('shouldShowEarlyFinishReminder', () => {
     expect(shouldShowEarlyFinishReminder(now, end)).toBe(false)
   })
 
+  it('does not show when deadline is exactly 17:30', () => {
+    const now = at(8, 40)
+    const end = at(17, 30)
+    expect(shouldShowEarlyFinishReminder(now, end)).toBe(false)
+  })
+
   it('does not show when deadline is on another day', () => {
     const now = at(8, 40)
     const end = at(8, 40)
@@ -112,6 +118,12 @@ describe('shouldShowTeamsReminder', () => {
   it('shows at 5:00 when the deadline spills past 17:30', () => {
     const now = at(17, 2)
     const end = at(18, 0)
+    expect(shouldShowTeamsReminder(now, end)).toBe(true)
+  })
+
+  it('shows at 5:00 when the deadline is exactly 17:30', () => {
+    const now = at(17, 5)
+    const end = at(17, 30)
     expect(shouldShowTeamsReminder(now, end)).toBe(true)
   })
 
@@ -131,6 +143,18 @@ describe('shouldShowTeamsReminder', () => {
   it('does not show outside the reminder window', () => {
     const now = at(14, 30)
     const end = at(16, 5)
+    expect(shouldShowTeamsReminder(now, end)).toBe(false)
+  })
+
+  it('does not show after a same-day deadline passes', () => {
+    const now = at(16, 6)
+    const end = at(16, 5)
+    expect(shouldShowTeamsReminder(now, end)).toBe(false)
+  })
+
+  it('does not show after the 17:30 reminder window', () => {
+    const now = at(17, 31)
+    const end = at(18, 0)
     expect(shouldShowTeamsReminder(now, end)).toBe(false)
   })
 })

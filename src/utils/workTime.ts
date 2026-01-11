@@ -126,7 +126,7 @@ export function shouldShowEarlyFinishReminder(now: Date, end: Date) {
   return (
     now.getTime() >= reminderStart.getTime() &&
     now.getTime() < reminderEnd.getTime() &&
-    end.getTime() <= finishCutoff.getTime()
+    end.getTime() < finishCutoff.getTime()
   )
 }
 
@@ -140,18 +140,14 @@ export function shouldShowTeamsReminder(now: Date, end: Date) {
   const dayCutoff = new Date(dayStart)
   dayCutoff.setHours(17, 30, 0, 0)
 
-  const reminderWindowMinutes = 10
-
-  if (endDay.getTime() !== dayStart.getTime() || end.getTime() > dayCutoff.getTime()) {
+  if (endDay.getTime() !== dayStart.getTime() || end.getTime() >= dayCutoff.getTime()) {
     const reminderStart = new Date(dayStart)
     reminderStart.setHours(17, 0, 0, 0)
-    const reminderEnd = new Date(reminderStart)
-    reminderEnd.setMinutes(reminderEnd.getMinutes() + reminderWindowMinutes)
+    const reminderEnd = new Date(dayStart)
+    reminderEnd.setHours(17, 30, 0, 0)
     return now.getTime() >= reminderStart.getTime() && now.getTime() < reminderEnd.getTime()
   }
 
   const remindAt = new Date(end.getTime() - 60 * 60000)
-  const reminderEnd = new Date(remindAt)
-  reminderEnd.setMinutes(reminderEnd.getMinutes() + reminderWindowMinutes)
-  return now.getTime() >= remindAt.getTime() && now.getTime() < reminderEnd.getTime()
+  return now.getTime() >= remindAt.getTime() && now.getTime() < end.getTime()
 }
