@@ -133,7 +133,7 @@ input {
   gap: 8px;
   max-width: 640px;
   margin: 0 auto 10px;
-  grid-template-columns: 1fr 120px auto;
+  grid-template-columns: 1fr 100px 120px auto;
 }
 
 .taskList {

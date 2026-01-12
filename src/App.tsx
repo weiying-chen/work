@@ -9,6 +9,7 @@ import {
   parseDatetimeLocalValue,
   toDatetimeLocalValue,
 } from './utils/time'
+import { minutesFromTimeParts } from './utils/taskTime'
 import {
   addWorkMinutes,
   isInWorkTime,
@@ -82,6 +83,7 @@ export default function App() {
     readStoredDate(LS_CHANGE_BASE_KEY)
   )
   const [taskText, setTaskText] = useState('')
+  const [taskHours, setTaskHours] = useState('')
   const [taskMinutes, setTaskMinutes] = useState('')
   const [messageTask, setMessageTask] = useState(() => localStorage.getItem(LS_MESSAGE_TASK_KEY) ?? '')
   const [messageAssignee, setMessageAssignee] = useState(
@@ -141,6 +143,7 @@ export default function App() {
     localStorage.setItem(LS_DAILY_CLEAR_KEY, todayKey)
     setTasks([])
     setTaskText('')
+    setTaskHours('')
     setTaskMinutes('')
     setChangeBaseDeadline(null)
     setPreviousTasks([])
@@ -279,8 +282,8 @@ export default function App() {
   }
 
   const addTaskEntry = () => {
-    const minutes = Number(taskMinutes)
-    if (!taskText.trim() || !Number.isFinite(minutes) || minutes <= 0) return
+    const minutes = minutesFromTimeParts(taskHours, taskMinutes)
+    if (!taskText.trim() || minutes === null) return
     const entry: TaskEntry = {
       text: taskText.trim(),
       minutes: Math.round(minutes),
@@ -296,6 +299,7 @@ export default function App() {
     setPreviousTasks(nextTasks)
     setDeadline(addWorkMinutes(baseDeadline, nextTasks.reduce((sum, item) => sum + item.minutes, 0)))
     setTaskText('')
+    setTaskHours('')
     setTaskMinutes('')
   }
 
@@ -387,13 +391,24 @@ export default function App() {
           />
           <input
             type="number"
-            min="1"
+            min="0"
+            value={taskHours}
+            onChange={(e) => setTaskHours(e.target.value)}
+            placeholder="Hours"
+            aria-label="Hours"
+          />
+          <input
+            type="number"
+            min="0"
             value={taskMinutes}
             onChange={(e) => setTaskMinutes(e.target.value)}
             placeholder="Minutes"
             aria-label="Minutes"
           />
-          <button onClick={addTaskEntry} disabled={!taskText.trim() || !taskMinutes}>
+          <button
+            onClick={addTaskEntry}
+            disabled={!taskText.trim() || minutesFromTimeParts(taskHours, taskMinutes) === null}
+          >
             Add task
           </button>
         </div>
