@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 
-import { formatTeamsMessage, type ReasonEntry } from './utils/deadlineHistory'
+import { formatTeamsMessage, type TaskEntry } from './utils/deadlineHistory'
 import {
   fmtDateTime,
   fmtTime,
@@ -25,8 +25,8 @@ type PickerInput = HTMLInputElement & {
 const LS_DEADLINE_KEY = 'aliveline:deadline-iso'
 const LS_PREV_DEADLINE_KEY = 'aliveline:previous-deadline-iso'
 const LS_PREV_CHANGED_KEY = 'aliveline:previous-deadline-changed-iso'
-const LS_PREV_REASONS_KEY = 'aliveline:previous-reasons'
-const LS_REASON_DRAFT_KEY = 'aliveline:reason-drafts'
+const LS_PREV_TASKS_KEY = 'aliveline:previous-tasks'
+const LS_TASKS_KEY = 'aliveline:tasks'
 const LS_CHANGE_BASE_KEY = 'aliveline:change-base-deadline-iso'
 const LS_MESSAGE_TASK_KEY = 'aliveline:message-task'
 const LS_MESSAGE_ASSIGNEE_KEY = 'aliveline:message-assignee'
@@ -47,11 +47,11 @@ function dateKey(d: Date) {
   return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`
 }
 
-function readStoredReasons(key: string) {
+function readStoredEntries(key: string) {
   const saved = localStorage.getItem(key)
-  if (!saved) return [] as ReasonEntry[]
+  if (!saved) return [] as TaskEntry[]
   try {
-    const parsed = JSON.parse(saved) as ReasonEntry[]
+    const parsed = JSON.parse(saved) as TaskEntry[]
     if (!Array.isArray(parsed)) return []
     return parsed.filter(
       (item) => typeof item?.text === 'string' && Number.isFinite(item?.minutes) && item.minutes > 0
@@ -72,17 +72,17 @@ export default function App() {
   const [previousChangedAt, setPreviousChangedAt] = useState<Date | null>(() =>
     readStoredDate(LS_PREV_CHANGED_KEY)
   )
-  const [previousReasons, setPreviousReasons] = useState<ReasonEntry[]>(() =>
-    readStoredReasons(LS_PREV_REASONS_KEY)
+  const [previousTasks, setPreviousTasks] = useState<TaskEntry[]>(() =>
+    readStoredEntries(LS_PREV_TASKS_KEY)
   )
-  const [reasonDrafts, setReasonDrafts] = useState<ReasonEntry[]>(() =>
-    readStoredReasons(LS_REASON_DRAFT_KEY)
+  const [tasks, setTasks] = useState<TaskEntry[]>(() =>
+    readStoredEntries(LS_TASKS_KEY)
   )
   const [changeBaseDeadline, setChangeBaseDeadline] = useState<Date | null>(() =>
     readStoredDate(LS_CHANGE_BASE_KEY)
   )
-  const [reasonText, setReasonText] = useState('')
-  const [reasonMinutes, setReasonMinutes] = useState('')
+  const [taskText, setTaskText] = useState('')
+  const [taskMinutes, setTaskMinutes] = useState('')
   const [messageTask, setMessageTask] = useState(() => localStorage.getItem(LS_MESSAGE_TASK_KEY) ?? '')
   const [messageAssignee, setMessageAssignee] = useState(
     () => localStorage.getItem(LS_MESSAGE_ASSIGNEE_KEY) ?? ''
@@ -111,12 +111,12 @@ export default function App() {
   }, [previousChangedAt])
 
   useEffect(() => {
-    localStorage.setItem(LS_PREV_REASONS_KEY, JSON.stringify(previousReasons))
-  }, [previousReasons])
+    localStorage.setItem(LS_PREV_TASKS_KEY, JSON.stringify(previousTasks))
+  }, [previousTasks])
 
   useEffect(() => {
-    localStorage.setItem(LS_REASON_DRAFT_KEY, JSON.stringify(reasonDrafts))
-  }, [reasonDrafts])
+    localStorage.setItem(LS_TASKS_KEY, JSON.stringify(tasks))
+  }, [tasks])
 
   useEffect(() => {
     if (changeBaseDeadline) {
@@ -139,11 +139,11 @@ export default function App() {
     if (now.getTime() < cutoff.getTime()) return
 
     localStorage.setItem(LS_DAILY_CLEAR_KEY, todayKey)
-    setReasonDrafts([])
-    setReasonText('')
-    setReasonMinutes('')
+    setTasks([])
+    setTaskText('')
+    setTaskMinutes('')
     setChangeBaseDeadline(null)
-    setPreviousReasons([])
+    setPreviousTasks([])
     setMessageTask('')
     setMessageAssignee('')
   }, [now])
@@ -224,15 +224,15 @@ export default function App() {
 
   const updateDeadline = (
     nextDeadline: Date,
-    options?: { reasons?: ReasonEntry[]; resetDrafts?: boolean }
+    options?: { tasks?: TaskEntry[]; resetDrafts?: boolean }
   ) => {
     if (nextDeadline.getTime() === deadline.getTime()) return
     setPreviousDeadline(deadline)
     setPreviousChangedAt(new Date())
-    setPreviousReasons(options?.reasons ?? [])
+    setPreviousTasks(options?.tasks ?? [])
     setDeadline(nextDeadline)
     if (options?.resetDrafts) {
-      setReasonDrafts([])
+      setTasks([])
       setChangeBaseDeadline(null)
     }
   }
@@ -258,11 +258,11 @@ export default function App() {
     return formatTeamsMessage({
       previous: previousDeadline,
       next: deadline,
-      reasons: reasonDrafts.length > 0 ? reasonDrafts : previousReasons,
+      tasks: tasks.length > 0 ? tasks : previousTasks,
       task: messageTask,
       assignee: messageAssignee,
     })
-  }, [deadline, messageAssignee, messageTask, previousDeadline, previousReasons, reasonDrafts])
+  }, [deadline, messageAssignee, messageTask, previousDeadline, previousTasks, tasks])
 
   useEffect(() => {
     setCopyStatus('idle')
@@ -278,36 +278,34 @@ export default function App() {
     }
   }
 
-  const addReasonDraft = () => {
-    const minutes = Number(reasonMinutes)
-    if (!reasonText.trim() || !Number.isFinite(minutes) || minutes <= 0) return
-    const entry: ReasonEntry = {
-      text: reasonText.trim(),
+  const addTaskEntry = () => {
+    const minutes = Number(taskMinutes)
+    if (!taskText.trim() || !Number.isFinite(minutes) || minutes <= 0) return
+    const entry: TaskEntry = {
+      text: taskText.trim(),
       minutes: Math.round(minutes),
     }
-    const nextReasons = [...reasonDrafts, entry]
+    const nextTasks = [...tasks, entry]
     const baseDeadline = changeBaseDeadline ?? deadline
     if (!changeBaseDeadline) {
       setPreviousDeadline(deadline)
       setPreviousChangedAt(new Date())
       setChangeBaseDeadline(deadline)
     }
-    setReasonDrafts(nextReasons)
-    setPreviousReasons(nextReasons)
-    setDeadline(
-      addWorkMinutes(baseDeadline, nextReasons.reduce((sum, reason) => sum + reason.minutes, 0))
-    )
-    setReasonText('')
-    setReasonMinutes('')
+    setTasks(nextTasks)
+    setPreviousTasks(nextTasks)
+    setDeadline(addWorkMinutes(baseDeadline, nextTasks.reduce((sum, item) => sum + item.minutes, 0)))
+    setTaskText('')
+    setTaskMinutes('')
   }
 
-  const removeReasonDraft = (index: number) => {
-    const nextReasons = reasonDrafts.filter((_, i) => i !== index)
-    setReasonDrafts(nextReasons)
-    setPreviousReasons(nextReasons)
+  const removeTaskEntry = (index: number) => {
+    const nextTasks = tasks.filter((_, i) => i !== index)
+    setTasks(nextTasks)
+    setPreviousTasks(nextTasks)
     if (changeBaseDeadline) {
       setDeadline(
-        addWorkMinutes(changeBaseDeadline, nextReasons.reduce((sum, reason) => sum + reason.minutes, 0))
+        addWorkMinutes(changeBaseDeadline, nextTasks.reduce((sum, item) => sum + item.minutes, 0))
       )
     }
   }
@@ -361,7 +359,7 @@ export default function App() {
       </div>
 
       <div className="message">
-        <div className="label">Add time by reason</div>
+        <div className="label">Add task time</div>
         <div className="messageFields">
           <input
             type="text"
@@ -379,34 +377,34 @@ export default function App() {
           />
         </div>
 
-        <div className="reasonFields">
+        <div className="taskFields">
           <input
             type="text"
-            value={reasonText}
-            onChange={(e) => setReasonText(e.target.value)}
-            placeholder="Reason"
-            aria-label="Reason"
+            value={taskText}
+            onChange={(e) => setTaskText(e.target.value)}
+            placeholder="Task"
+            aria-label="Task"
           />
           <input
             type="number"
             min="1"
-            value={reasonMinutes}
-            onChange={(e) => setReasonMinutes(e.target.value)}
+            value={taskMinutes}
+            onChange={(e) => setTaskMinutes(e.target.value)}
             placeholder="Minutes"
             aria-label="Minutes"
           />
-          <button onClick={addReasonDraft} disabled={!reasonText.trim() || !reasonMinutes}>
-            Add reason
+          <button onClick={addTaskEntry} disabled={!taskText.trim() || !taskMinutes}>
+            Add task
           </button>
         </div>
 
-        {reasonDrafts.length > 0 && (
-          <div className="reasonList">
-            {reasonDrafts.map((reason, index) => (
-              <div key={`${reason.text}-${index}`} className="reasonRow">
-                <span>{reason.text}</span>
-                <span>{reason.minutes}分</span>
-                <button onClick={() => removeReasonDraft(index)} aria-label="Remove reason">
+        {tasks.length > 0 && (
+          <div className="taskList">
+            {tasks.map((entry, index) => (
+              <div key={`${entry.text}-${index}`} className="taskRow">
+                <span>{entry.text}</span>
+                <span>{entry.minutes}分</span>
+                <button onClick={() => removeTaskEntry(index)} aria-label="Remove task">
                   Remove
                 </button>
               </div>
@@ -415,7 +413,7 @@ export default function App() {
         )}
 
         <div className="messagePreview" aria-label="Teams message preview">
-          {teamsMessage || 'Add time to generate a Teams message preview.'}
+          {teamsMessage || 'Add tasks to generate a Teams message preview.'}
         </div>
 
         <div className="messageActions">
