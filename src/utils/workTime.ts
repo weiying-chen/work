@@ -1,13 +1,14 @@
-// Work-time rules: 8:00–12:00, 13:00–17:00 (local time).
+// Work-time rules: 8:30–17:30 (local time).
 // Pure logic: no React, no storage.
 
 export type TimeHM = { h: number; m: number }
 export type WorkBlock = { start: TimeHM; end: TimeHM }
 
 export const WORK_BLOCKS: WorkBlock[] = [
-  { start: { h: 8, m: 0 }, end: { h: 12, m: 0 } },
-  { start: { h: 13, m: 0 }, end: { h: 17, m: 0 } },
+  { start: { h: 8, m: 30 }, end: { h: 17, m: 30 } },
 ]
+
+const PRIMARY_BLOCK = WORK_BLOCKS[0]
 
 export function atLocalTime(baseDay: Date, t: TimeHM) {
   const d = new Date(baseDay)
@@ -115,13 +116,11 @@ export function shouldShowEarlyFinishReminder(now: Date, end: Date) {
 
   if (dayStart.getTime() !== endDay.getTime()) return false
 
-  const reminderStart = new Date(dayStart)
-  reminderStart.setHours(8, 30, 0, 0)
-  const reminderEnd = new Date(dayStart)
-  reminderEnd.setHours(9, 0, 0, 0)
+  const reminderStart = atLocalTime(dayStart, PRIMARY_BLOCK.start)
+  const reminderEnd = new Date(reminderStart)
+  reminderEnd.setMinutes(reminderEnd.getMinutes() + 30)
 
-  const finishCutoff = new Date(dayStart)
-  finishCutoff.setHours(17, 30, 0, 0)
+  const finishCutoff = atLocalTime(dayStart, PRIMARY_BLOCK.end)
 
   return (
     now.getTime() >= reminderStart.getTime() &&
@@ -137,14 +136,12 @@ export function shouldShowTeamsReminder(now: Date, end: Date) {
   const endDay = new Date(end)
   endDay.setHours(0, 0, 0, 0)
 
-  const dayCutoff = new Date(dayStart)
-  dayCutoff.setHours(17, 30, 0, 0)
+  const dayCutoff = atLocalTime(dayStart, PRIMARY_BLOCK.end)
 
   if (endDay.getTime() !== dayStart.getTime() || end.getTime() >= dayCutoff.getTime()) {
-    const reminderStart = new Date(dayStart)
-    reminderStart.setHours(17, 0, 0, 0)
-    const reminderEnd = new Date(dayStart)
-    reminderEnd.setHours(17, 30, 0, 0)
+    const reminderEnd = new Date(dayCutoff)
+    const reminderStart = new Date(dayCutoff)
+    reminderStart.setMinutes(reminderStart.getMinutes() - 30)
     return now.getTime() >= reminderStart.getTime() && now.getTime() < reminderEnd.getTime()
   }
 
