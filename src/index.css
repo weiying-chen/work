@@ -35,7 +35,7 @@ body {
   margin-bottom: 4px;
 }
 
-.end {
+.deadline {
   font-size: 34px;
   font-weight: 600;
   margin-bottom: 0;
@@ -192,25 +192,25 @@ input {
   }
 }
 
-/* End picker button */
-.endButton {
+/* Deadline picker button */
+.deadlineButton {
   display: inline-flex;
   align-items: center;
   gap: 6px;
 }
 
-.endButton .icon {
+.deadlineButton .icon {
   font-size: 14px;
   line-height: 1;
 }
 
-.endPickerWrap {
+.deadlinePickerWrap {
   position: relative;
   display: inline-block;
 }
 
 /* Overlay the real input exactly on the button area */
-.endInputGhost {
+.deadlineInputGhost {
   position: absolute;
   inset: 0;
   width: 100%;

@@ -107,14 +107,14 @@ export function addWorkMinutes(start: Date, minutes: number, blocks: WorkBlock[]
   return cursor
 }
 
-export function shouldShowEarlyFinishReminder(now: Date, end: Date) {
+export function shouldShowEarlyFinishReminder(now: Date, deadline: Date) {
   const dayStart = new Date(now)
   dayStart.setHours(0, 0, 0, 0)
 
-  const endDay = new Date(end)
-  endDay.setHours(0, 0, 0, 0)
+  const deadlineDay = new Date(deadline)
+  deadlineDay.setHours(0, 0, 0, 0)
 
-  if (dayStart.getTime() !== endDay.getTime()) return false
+  if (dayStart.getTime() !== deadlineDay.getTime()) return false
 
   const reminderStart = atLocalTime(dayStart, PRIMARY_BLOCK.start)
   const reminderEnd = new Date(reminderStart)
@@ -125,26 +125,26 @@ export function shouldShowEarlyFinishReminder(now: Date, end: Date) {
   return (
     now.getTime() >= reminderStart.getTime() &&
     now.getTime() < reminderEnd.getTime() &&
-    end.getTime() < finishCutoff.getTime()
+    deadline.getTime() < finishCutoff.getTime()
   )
 }
 
-export function shouldShowTeamsReminder(now: Date, end: Date) {
+export function shouldShowTeamsReminder(now: Date, deadline: Date) {
   const dayStart = new Date(now)
   dayStart.setHours(0, 0, 0, 0)
 
-  const endDay = new Date(end)
-  endDay.setHours(0, 0, 0, 0)
+  const deadlineDay = new Date(deadline)
+  deadlineDay.setHours(0, 0, 0, 0)
 
   const dayCutoff = atLocalTime(dayStart, PRIMARY_BLOCK.end)
 
-  if (endDay.getTime() !== dayStart.getTime() || end.getTime() >= dayCutoff.getTime()) {
+  if (deadlineDay.getTime() !== dayStart.getTime() || deadline.getTime() >= dayCutoff.getTime()) {
     const reminderEnd = new Date(dayCutoff)
     const reminderStart = new Date(dayCutoff)
     reminderStart.setMinutes(reminderStart.getMinutes() - 30)
     return now.getTime() >= reminderStart.getTime() && now.getTime() < reminderEnd.getTime()
   }
 
-  const remindAt = new Date(end.getTime() - 60 * 60000)
-  return now.getTime() >= remindAt.getTime() && now.getTime() < end.getTime()
+  const remindAt = new Date(deadline.getTime() - 60 * 60000)
+  return now.getTime() >= remindAt.getTime() && now.getTime() < deadline.getTime()
 }

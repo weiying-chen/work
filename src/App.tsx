@@ -22,19 +22,19 @@ type PickerInput = HTMLInputElement & {
   showPicker?: () => void
 }
 
-const LS_END_KEY = 'deadline:end-iso'
-const LS_PREV_END_KEY = 'deadline:previous-end-iso'
-const LS_PREV_CHANGED_KEY = 'deadline:previous-changed-iso'
-const LS_PREV_REASONS_KEY = 'deadline:previous-reasons'
-const LS_REASON_DRAFT_KEY = 'deadline:reason-draft'
-const LS_CHANGE_BASE_KEY = 'deadline:change-base-iso'
-const LS_MESSAGE_TASK_KEY = 'deadline:message-task'
-const LS_MESSAGE_ASSIGNEE_KEY = 'deadline:message-assignee'
-const LS_DAILY_CLEAR_KEY = 'deadline:daily-clear'
-const LS_REMINDER_NOTIFIED_KEY = 'deadline:reminder-notified'
-const LS_REMINDER_REQUESTED_KEY = 'deadline:reminder-requested'
-const LS_TEAMS_REMINDER_NOTIFIED_KEY = 'deadline:teams-reminder-notified'
-const LS_TEAMS_REMINDER_REQUESTED_KEY = 'deadline:teams-reminder-requested'
+const LS_DEADLINE_KEY = 'aliveline:deadline-iso'
+const LS_PREV_DEADLINE_KEY = 'aliveline:previous-deadline-iso'
+const LS_PREV_CHANGED_KEY = 'aliveline:previous-deadline-changed-iso'
+const LS_PREV_REASONS_KEY = 'aliveline:previous-reasons'
+const LS_REASON_DRAFT_KEY = 'aliveline:reason-drafts'
+const LS_CHANGE_BASE_KEY = 'aliveline:change-base-deadline-iso'
+const LS_MESSAGE_TASK_KEY = 'aliveline:message-task'
+const LS_MESSAGE_ASSIGNEE_KEY = 'aliveline:message-assignee'
+const LS_DAILY_CLEAR_KEY = 'aliveline:daily-clear'
+const LS_REMINDER_NOTIFIED_KEY = 'aliveline:reminder-notified'
+const LS_REMINDER_REQUESTED_KEY = 'aliveline:reminder-requested'
+const LS_TEAMS_REMINDER_NOTIFIED_KEY = 'aliveline:teams-reminder-notified'
+const LS_TEAMS_REMINDER_REQUESTED_KEY = 'aliveline:teams-reminder-requested'
 
 function readStoredDate(key: string) {
   const saved = localStorage.getItem(key)
@@ -62,11 +62,13 @@ function readStoredReasons(key: string) {
 }
 
 export default function App() {
-  const endRef = useRef<PickerInput | null>(null)
+  const deadlineRef = useRef<PickerInput | null>(null)
 
   const [now, setNow] = useState(() => new Date())
-  const [end, setEnd] = useState(() => readStoredDate(LS_END_KEY) ?? new Date())
-  const [previousEnd, setPreviousEnd] = useState<Date | null>(() => readStoredDate(LS_PREV_END_KEY))
+  const [deadline, setDeadline] = useState(() => readStoredDate(LS_DEADLINE_KEY) ?? new Date())
+  const [previousDeadline, setPreviousDeadline] = useState<Date | null>(() =>
+    readStoredDate(LS_PREV_DEADLINE_KEY)
+  )
   const [previousChangedAt, setPreviousChangedAt] = useState<Date | null>(() =>
     readStoredDate(LS_PREV_CHANGED_KEY)
   )
@@ -76,7 +78,9 @@ export default function App() {
   const [reasonDrafts, setReasonDrafts] = useState<ReasonEntry[]>(() =>
     readStoredReasons(LS_REASON_DRAFT_KEY)
   )
-  const [changeBaseEnd, setChangeBaseEnd] = useState<Date | null>(() => readStoredDate(LS_CHANGE_BASE_KEY))
+  const [changeBaseDeadline, setChangeBaseDeadline] = useState<Date | null>(() =>
+    readStoredDate(LS_CHANGE_BASE_KEY)
+  )
   const [reasonText, setReasonText] = useState('')
   const [reasonMinutes, setReasonMinutes] = useState('')
   const [messageTask, setMessageTask] = useState(() => localStorage.getItem(LS_MESSAGE_TASK_KEY) ?? '')
@@ -91,14 +95,14 @@ export default function App() {
   }, [])
 
   useEffect(() => {
-    localStorage.setItem(LS_END_KEY, end.toISOString())
-  }, [end])
+    localStorage.setItem(LS_DEADLINE_KEY, deadline.toISOString())
+  }, [deadline])
 
   useEffect(() => {
-    if (previousEnd) {
-      localStorage.setItem(LS_PREV_END_KEY, previousEnd.toISOString())
+    if (previousDeadline) {
+      localStorage.setItem(LS_PREV_DEADLINE_KEY, previousDeadline.toISOString())
     }
-  }, [previousEnd])
+  }, [previousDeadline])
 
   useEffect(() => {
     if (previousChangedAt) {
@@ -115,12 +119,12 @@ export default function App() {
   }, [reasonDrafts])
 
   useEffect(() => {
-    if (changeBaseEnd) {
-      localStorage.setItem(LS_CHANGE_BASE_KEY, changeBaseEnd.toISOString())
+    if (changeBaseDeadline) {
+      localStorage.setItem(LS_CHANGE_BASE_KEY, changeBaseDeadline.toISOString())
     } else {
       localStorage.removeItem(LS_CHANGE_BASE_KEY)
     }
-  }, [changeBaseEnd])
+  }, [changeBaseDeadline])
 
   useEffect(() => {
     localStorage.setItem(LS_MESSAGE_TASK_KEY, messageTask)
@@ -138,20 +142,23 @@ export default function App() {
     setReasonDrafts([])
     setReasonText('')
     setReasonMinutes('')
-    setChangeBaseEnd(null)
+    setChangeBaseDeadline(null)
     setPreviousReasons([])
     setMessageTask('')
     setMessageAssignee('')
   }, [now])
 
-  const workMsLeft = useMemo(() => workMsBetween(now, end), [now, end])
+  const workMsLeft = useMemo(() => workMsBetween(now, deadline), [now, deadline])
   const parts = useMemo(() => msToParts(workMsLeft), [workMsLeft])
   const workStartAt = useMemo(() => (isInWorkTime(now) ? now : nextWorkStart(now)), [now])
   const showEarlyFinishReminder = useMemo(
-    () => shouldShowEarlyFinishReminder(now, end),
-    [end, now]
+    () => shouldShowEarlyFinishReminder(now, deadline),
+    [deadline, now]
   )
-  const showTeamsReminder = useMemo(() => shouldShowTeamsReminder(now, end), [end, now])
+  const showTeamsReminder = useMemo(
+    () => shouldShowTeamsReminder(now, deadline),
+    [deadline, now]
+  )
 
   useEffect(() => {
     if (!showEarlyFinishReminder) return
@@ -180,7 +187,7 @@ export default function App() {
     Notification.requestPermission().then((permission) => {
       if (permission === 'granted') sendNotification()
     })
-  }, [end, now, showEarlyFinishReminder])
+  }, [deadline, now, showEarlyFinishReminder])
 
   useEffect(() => {
     if (!showTeamsReminder) return
@@ -209,31 +216,34 @@ export default function App() {
     Notification.requestPermission().then((permission) => {
       if (permission === 'granted') sendNotification()
     })
-  }, [end, now, showTeamsReminder])
+  }, [deadline, now, showTeamsReminder])
 
   useEffect(() => {
     localStorage.setItem(LS_MESSAGE_ASSIGNEE_KEY, messageAssignee)
   }, [messageAssignee])
 
-  const updateDeadline = (nextEnd: Date, options?: { reasons?: ReasonEntry[]; resetDrafts?: boolean }) => {
-    if (nextEnd.getTime() === end.getTime()) return
-    setPreviousEnd(end)
+  const updateDeadline = (
+    nextDeadline: Date,
+    options?: { reasons?: ReasonEntry[]; resetDrafts?: boolean }
+  ) => {
+    if (nextDeadline.getTime() === deadline.getTime()) return
+    setPreviousDeadline(deadline)
     setPreviousChangedAt(new Date())
     setPreviousReasons(options?.reasons ?? [])
-    setEnd(nextEnd)
+    setDeadline(nextDeadline)
     if (options?.resetDrafts) {
       setReasonDrafts([])
-      setChangeBaseEnd(null)
+      setChangeBaseDeadline(null)
     }
   }
 
-  const onSetEnd = (v: string) => {
+  const onSetDeadline = (v: string) => {
     const d = parseDatetimeLocalValue(v)
     if (d) updateDeadline(d, { resetDrafts: true })
   }
 
   const openPicker = () => {
-    const el = endRef.current
+    const el = deadlineRef.current
     if (!el) return
     el.focus()
     el.showPicker?.()
@@ -244,15 +254,15 @@ export default function App() {
   }
 
   const teamsMessage = useMemo(() => {
-    if (!previousEnd) return ''
+    if (!previousDeadline) return ''
     return formatTeamsMessage({
-      previous: previousEnd,
-      next: end,
+      previous: previousDeadline,
+      next: deadline,
       reasons: reasonDrafts.length > 0 ? reasonDrafts : previousReasons,
       task: messageTask,
       assignee: messageAssignee,
     })
-  }, [end, messageAssignee, messageTask, previousEnd, previousReasons, reasonDrafts])
+  }, [deadline, messageAssignee, messageTask, previousDeadline, previousReasons, reasonDrafts])
 
   useEffect(() => {
     setCopyStatus('idle')
@@ -276,15 +286,17 @@ export default function App() {
       minutes: Math.round(minutes),
     }
     const nextReasons = [...reasonDrafts, entry]
-    const baseEnd = changeBaseEnd ?? end
-    if (!changeBaseEnd) {
-      setPreviousEnd(end)
+    const baseDeadline = changeBaseDeadline ?? deadline
+    if (!changeBaseDeadline) {
+      setPreviousDeadline(deadline)
       setPreviousChangedAt(new Date())
-      setChangeBaseEnd(end)
+      setChangeBaseDeadline(deadline)
     }
     setReasonDrafts(nextReasons)
     setPreviousReasons(nextReasons)
-    setEnd(addWorkMinutes(baseEnd, nextReasons.reduce((sum, reason) => sum + reason.minutes, 0)))
+    setDeadline(
+      addWorkMinutes(baseDeadline, nextReasons.reduce((sum, reason) => sum + reason.minutes, 0))
+    )
     setReasonText('')
     setReasonMinutes('')
   }
@@ -293,8 +305,10 @@ export default function App() {
     const nextReasons = reasonDrafts.filter((_, i) => i !== index)
     setReasonDrafts(nextReasons)
     setPreviousReasons(nextReasons)
-    if (changeBaseEnd) {
-      setEnd(addWorkMinutes(changeBaseEnd, nextReasons.reduce((sum, reason) => sum + reason.minutes, 0)))
+    if (changeBaseDeadline) {
+      setDeadline(
+        addWorkMinutes(changeBaseDeadline, nextReasons.reduce((sum, reason) => sum + reason.minutes, 0))
+      )
     }
   }
 
@@ -303,12 +317,12 @@ export default function App() {
       <div className="main">
         <div className="block">
           <div className="label">Previous deadline</div>
-          <div className="previous">{previousEnd ? fmtDateTime(previousEnd) : '—'}</div>
+          <div className="previous">{previousDeadline ? fmtDateTime(previousDeadline) : '—'}</div>
         </div>
 
         <div className="block">
           <div className="label">Deadline</div>
-          <div className="end">{fmtDateTime(end)}</div>
+          <div className="deadline">{fmtDateTime(deadline)}</div>
         </div>
 
         <div className="block">
@@ -326,17 +340,17 @@ export default function App() {
       </div>
 
       <div className="controls">
-        <span className="endPickerWrap">
+        <span className="deadlinePickerWrap">
           <input
-            ref={endRef}
-            className="endInputGhost"
+            ref={deadlineRef}
+            className="deadlineInputGhost"
             type="datetime-local"
-            value={toDatetimeLocalValue(end)}
-            onChange={(e) => onSetEnd(e.target.value)}
-            aria-label="End time"
+            value={toDatetimeLocalValue(deadline)}
+            onChange={(e) => onSetDeadline(e.target.value)}
+            aria-label="Deadline time"
           />
 
-          <button onClick={openPicker} className="endButton" aria-label="Change end time">
+          <button onClick={openPicker} className="deadlineButton" aria-label="Change deadline time">
             Set deadline <span className="icon">🗓️</span>
           </button>
         </span>
@@ -405,7 +419,7 @@ export default function App() {
         </div>
 
         <div className="messageActions">
-          <button onClick={onCopyTeamsMessage} disabled={!previousEnd}>
+          <button onClick={onCopyTeamsMessage} disabled={!previousDeadline}>
             Copy Teams message
           </button>
           {copyStatus === 'copied' && <span className="copyStatus">Copied.</span>}
