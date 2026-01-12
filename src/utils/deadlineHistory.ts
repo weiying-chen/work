@@ -11,7 +11,7 @@ export function formatTeamsDate(d: Date) {
   return `${month}/${day}（${weekday}）${hours}:${minutes}`
 }
 
-export type ReasonEntry = {
+export type TaskEntry = {
   text: string
   minutes: number
 }
@@ -19,15 +19,15 @@ export type ReasonEntry = {
 type TeamsMessageOptions = {
   previous: Date
   next: Date
-  reasons?: ReasonEntry[]
+  tasks?: TaskEntry[]
   task?: string
   assignee?: string
 }
 
-function formatReasonLine(reason: ReasonEntry) {
-  const trimmed = reason.text.trim()
+function formatTaskLine(task: TaskEntry) {
+  const trimmed = task.text.trim()
   if (!trimmed) return ''
-  return `${trimmed} ${formatDuration(reason.minutes)}`
+  return `${trimmed} ${formatDuration(task.minutes)}`
 }
 
 export function formatDuration(totalMinutes: number) {
@@ -38,14 +38,14 @@ export function formatDuration(totalMinutes: number) {
   return `${minutes}分`
 }
 
-export function formatTeamsMessage({ previous, next, reasons, task, assignee }: TeamsMessageOptions) {
-  const sanitizedReasons =
-    reasons?.filter((reason) => reason.text.trim().length > 0 && reason.minutes > 0) ?? []
-  const totalMinutes = sanitizedReasons.reduce((sum, reason) => sum + reason.minutes, 0)
-  const reasonLines = sanitizedReasons.map(formatReasonLine).filter((line) => line.length > 0).join('\n')
+export function formatTeamsMessage({ previous, next, tasks, task, assignee }: TeamsMessageOptions) {
+  const sanitizedTasks =
+    tasks?.filter((item) => item.text.trim().length > 0 && item.minutes > 0) ?? []
+  const totalMinutes = sanitizedTasks.reduce((sum, item) => sum + item.minutes, 0)
+  const taskLines = sanitizedTasks.map(formatTaskLine).filter((line) => line.length > 0).join('\n')
   const prefix =
-    reasonLines.length > 0
-      ? `今日做其他事時間是 ${formatDuration(totalMinutes)}\n\n${reasonLines}\n\n`
+    taskLines.length > 0
+      ? `今日做其他事時間是 ${formatDuration(totalMinutes)}\n\n${taskLines}\n\n`
       : ''
   const action = next.getTime() < previous.getTime() ? '提前至' : '延後至'
   const taskPrefix = task?.trim() ? `${task.trim()}，` : ''

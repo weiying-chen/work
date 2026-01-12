@@ -128,7 +128,7 @@ input {
   margin: 0 auto 10px;
 }
 
-.reasonFields {
+.taskFields {
   display: grid;
   gap: 8px;
   max-width: 640px;
@@ -136,7 +136,7 @@ input {
   grid-template-columns: 1fr 120px auto;
 }
 
-.reasonList {
+.taskList {
   max-width: 640px;
   margin: 0 auto 10px;
   display: grid;
@@ -144,7 +144,7 @@ input {
   text-align: left;
 }
 
-.reasonRow {
+.taskRow {
   display: grid;
   grid-template-columns: 1fr auto auto;
   gap: 8px;
@@ -179,15 +179,15 @@ input {
 }
 
 @media (max-width: 640px) {
-  .reasonFields {
+  .taskFields {
     grid-template-columns: 1fr;
   }
 
-  .reasonRow {
+  .taskRow {
     grid-template-columns: 1fr auto;
   }
 
-  .reasonRow button {
+  .taskRow button {
     grid-column: 1 / -1;
   }
 }

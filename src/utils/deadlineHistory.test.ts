@@ -13,14 +13,14 @@ describe('formatTeamsMessage', () => {
   it('builds a multi-line Teams update', () => {
     const previous = new Date(2025, 0, 8, 14, 25)
     const next = new Date(2025, 0, 8, 15, 10)
-    const reasons = [
+    const tasks = [
       { text: '討論小編文', minutes: 45 },
       { text: '其他任務', minutes: 15 },
     ]
     const message = formatTeamsMessage({
       previous,
       next,
-      reasons,
+      tasks,
       task: '心靈講座（看見自己的天才 - 盧蘇偉）',
       assignee: 'Syharn Shen',
     })
