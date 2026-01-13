@@ -429,14 +429,14 @@ export default function App() {
       </div>
 
       <div className="message">
-        <div className="label">Add task time</div>
+        <div className="label">Add tasks</div>
         <div className="messageFields">
           <input
             type="text"
             value={messageTask}
             onChange={(e) => setMessageTask(e.target.value)}
-            placeholder="Task (optional)"
-            aria-label="Task name"
+            placeholder="Assignment (optional)"
+            aria-label="Assignment name"
           />
           <input
             type="text"
@@ -452,8 +452,8 @@ export default function App() {
             type="text"
             value={taskText}
             onChange={(e) => setTaskText(e.target.value)}
-            placeholder="Task"
-            aria-label="Task"
+            placeholder="Task item"
+            aria-label="Task item"
           />
           <input
             type="number"
@@ -509,29 +509,29 @@ export default function App() {
       </div>
 
       <div className="message">
-        <div className="label">Status + next deadline</div>
+        <div className="label">Assignment status + next deadline</div>
         <div className="statusFields">
           <input
             type="text"
             value={statusCompletedTask}
             onChange={(e) => setStatusCompletedTask(e.target.value)}
-            placeholder="Completed task (short)"
-            aria-label="Completed task"
+            placeholder="Completed assignment (short)"
+            aria-label="Completed assignment"
           />
           <input
             type="text"
             value={statusNextTask}
             onChange={(e) => setStatusNextTask(e.target.value)}
-            placeholder="Next task"
-            aria-label="Next task"
+            placeholder="Next assignment"
+            aria-label="Next assignment"
           />
           <input
             type="number"
             min="0"
             value={statusNextCount}
             onChange={(e) => setStatusNextCount(e.target.value)}
-            placeholder="Count (optional)"
-            aria-label="Next task count"
+            placeholder="File count (optional)"
+            aria-label="Next assignment file count"
           />
           <input
             type="text"
