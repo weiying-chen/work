@@ -128,6 +128,18 @@ input {
   margin: 0 auto 10px;
 }
 
+.statusFields {
+  display: grid;
+  gap: 8px;
+  max-width: 640px;
+  margin: 0 auto 10px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.statusFields .statusStartAt {
+  grid-column: 1 / -1;
+}
+
 .taskFields {
   display: grid;
   gap: 8px;
@@ -179,6 +191,10 @@ input {
 }
 
 @media (max-width: 640px) {
+  .statusFields {
+    grid-template-columns: 1fr;
+  }
+
   .taskFields {
     grid-template-columns: 1fr;
   }
@@ -192,34 +208,9 @@ input {
   }
 }
 
-/* Deadline picker button */
-.deadlineButton {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.deadlineButton .icon {
-  font-size: 14px;
-  line-height: 1;
-}
-
-.deadlinePickerWrap {
-  position: relative;
-  display: inline-block;
-}
-
-/* Overlay the real input exactly on the button area */
-.deadlineInputGhost {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  opacity: 0;
-  margin: 0;
-  border: 0;
-  padding: 0;
-  pointer-events: none;
+/* Deadline picker input */
+.deadlineInput {
+  min-width: 260px;
 }
 
 /* Native control styling hint */

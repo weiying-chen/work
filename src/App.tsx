@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 
 import { formatDuration, formatTeamsMessage, type TaskEntry } from './utils/deadlineHistory'
+import { formatStatusMessage } from './utils/statusMessage'
 import {
   fmtDateTime,
   fmtTime,
@@ -19,9 +20,7 @@ import {
   workMsBetween,
 } from './utils/workTime'
 
-type PickerInput = HTMLInputElement & {
-  showPicker?: () => void
-}
+type PickerInput = HTMLInputElement
 
 const LS_DEADLINE_KEY = 'aliveline:deadline-iso'
 const LS_PREV_DEADLINE_KEY = 'aliveline:previous-deadline-iso'
@@ -31,6 +30,11 @@ const LS_TASKS_KEY = 'aliveline:tasks'
 const LS_CHANGE_BASE_KEY = 'aliveline:change-base-deadline-iso'
 const LS_MESSAGE_TASK_KEY = 'aliveline:message-task'
 const LS_MESSAGE_ASSIGNEE_KEY = 'aliveline:message-assignee'
+const LS_STATUS_COMPLETED_TASK_KEY = 'aliveline:status-completed-task'
+const LS_STATUS_NEXT_TASK_KEY = 'aliveline:status-next-task'
+const LS_STATUS_NEXT_COUNT_KEY = 'aliveline:status-next-count'
+const LS_STATUS_ASSIGNEE_KEY = 'aliveline:status-assignee'
+const LS_STATUS_START_KEY = 'aliveline:status-start-iso'
 const LS_DAILY_CLEAR_KEY = 'aliveline:daily-clear'
 const LS_REMINDER_NOTIFIED_KEY = 'aliveline:reminder-notified'
 const LS_REMINDER_REQUESTED_KEY = 'aliveline:reminder-requested'
@@ -89,7 +93,23 @@ export default function App() {
   const [messageAssignee, setMessageAssignee] = useState(
     () => localStorage.getItem(LS_MESSAGE_ASSIGNEE_KEY) ?? ''
   )
+  const [statusCompletedTask, setStatusCompletedTask] = useState(
+    () => localStorage.getItem(LS_STATUS_COMPLETED_TASK_KEY) ?? ''
+  )
+  const [statusNextTask, setStatusNextTask] = useState(
+    () => localStorage.getItem(LS_STATUS_NEXT_TASK_KEY) ?? ''
+  )
+  const [statusNextCount, setStatusNextCount] = useState(
+    () => localStorage.getItem(LS_STATUS_NEXT_COUNT_KEY) ?? ''
+  )
+  const [statusAssignee, setStatusAssignee] = useState(
+    () => localStorage.getItem(LS_STATUS_ASSIGNEE_KEY) ?? ''
+  )
+  const [statusStartAt, setStatusStartAt] = useState<Date | null>(
+    () => readStoredDate(LS_STATUS_START_KEY)
+  )
   const [copyStatus, setCopyStatus] = useState<'idle' | 'copied' | 'failed'>('idle')
+  const [statusCopyStatus, setStatusCopyStatus] = useState<'idle' | 'copied' | 'failed'>('idle')
 
   useEffect(() => {
     const id = setInterval(() => setNow(new Date()), 1000)
@@ -225,6 +245,30 @@ export default function App() {
     localStorage.setItem(LS_MESSAGE_ASSIGNEE_KEY, messageAssignee)
   }, [messageAssignee])
 
+  useEffect(() => {
+    localStorage.setItem(LS_STATUS_COMPLETED_TASK_KEY, statusCompletedTask)
+  }, [statusCompletedTask])
+
+  useEffect(() => {
+    localStorage.setItem(LS_STATUS_NEXT_TASK_KEY, statusNextTask)
+  }, [statusNextTask])
+
+  useEffect(() => {
+    localStorage.setItem(LS_STATUS_NEXT_COUNT_KEY, statusNextCount)
+  }, [statusNextCount])
+
+  useEffect(() => {
+    localStorage.setItem(LS_STATUS_ASSIGNEE_KEY, statusAssignee)
+  }, [statusAssignee])
+
+  useEffect(() => {
+    if (statusStartAt) {
+      localStorage.setItem(LS_STATUS_START_KEY, statusStartAt.toISOString())
+    } else {
+      localStorage.removeItem(LS_STATUS_START_KEY)
+    }
+  }, [statusStartAt])
+
   const updateDeadline = (
     nextDeadline: Date,
     options?: { tasks?: TaskEntry[]; resetDrafts?: boolean }
@@ -243,13 +287,6 @@ export default function App() {
   const onSetDeadline = (v: string) => {
     const d = parseDatetimeLocalValue(v)
     if (d) updateDeadline(d, { resetDrafts: true })
-  }
-
-  const openPicker = () => {
-    const el = deadlineRef.current
-    if (!el) return
-    el.focus()
-    el.showPicker?.()
   }
 
   const reset = () => {
@@ -271,6 +308,31 @@ export default function App() {
     setCopyStatus('idle')
   }, [teamsMessage])
 
+  const statusMessage = useMemo(() => {
+    if (!statusStartAt) return ''
+    const parsedCount = statusNextCount.trim() ? Number(statusNextCount) : undefined
+    const count = Number.isFinite(parsedCount) ? parsedCount : undefined
+    return formatStatusMessage({
+      completedTask: statusCompletedTask,
+      nextTask: statusNextTask,
+      nextTaskCount: count,
+      assignee: statusAssignee,
+      start: statusStartAt,
+      deadline,
+    })
+  }, [
+    deadline,
+    statusAssignee,
+    statusCompletedTask,
+    statusNextCount,
+    statusNextTask,
+    statusStartAt,
+  ])
+
+  useEffect(() => {
+    setStatusCopyStatus('idle')
+  }, [statusMessage])
+
   const onCopyTeamsMessage = async () => {
     if (!teamsMessage) return
     try {
@@ -278,6 +340,16 @@ export default function App() {
       setCopyStatus('copied')
     } catch {
       setCopyStatus('failed')
+    }
+  }
+
+  const onCopyStatusMessage = async () => {
+    if (!statusMessage) return
+    try {
+      await navigator.clipboard.writeText(statusMessage)
+      setStatusCopyStatus('copied')
+    } catch {
+      setStatusCopyStatus('failed')
     }
   }
 
@@ -342,20 +414,14 @@ export default function App() {
       </div>
 
       <div className="controls">
-        <span className="deadlinePickerWrap">
-          <input
-            ref={deadlineRef}
-            className="deadlineInputGhost"
-            type="datetime-local"
-            value={toDatetimeLocalValue(deadline)}
-            onChange={(e) => onSetDeadline(e.target.value)}
-            aria-label="Deadline time"
-          />
-
-          <button onClick={openPicker} className="deadlineButton" aria-label="Change deadline time">
-            Set deadline <span className="icon">🗓️</span>
-          </button>
-        </span>
+        <input
+          ref={deadlineRef}
+          className="deadlineInput"
+          type="datetime-local"
+          value={toDatetimeLocalValue(deadline)}
+          onChange={(e) => onSetDeadline(e.target.value)}
+          aria-label="Deadline time"
+        />
 
         <button onClick={reset} className="resetButton" aria-label="Reset deadline to now">
           Reset
@@ -437,6 +503,62 @@ export default function App() {
           </button>
           {copyStatus === 'copied' && <span className="copyStatus">Copied.</span>}
           {copyStatus === 'failed' && (
+            <span className="copyStatus">Copy failed. Please copy manually.</span>
+          )}
+        </div>
+      </div>
+
+      <div className="message">
+        <div className="label">Status + next deadline</div>
+        <div className="statusFields">
+          <input
+            type="text"
+            value={statusCompletedTask}
+            onChange={(e) => setStatusCompletedTask(e.target.value)}
+            placeholder="Completed task (short)"
+            aria-label="Completed task"
+          />
+          <input
+            type="text"
+            value={statusNextTask}
+            onChange={(e) => setStatusNextTask(e.target.value)}
+            placeholder="Next task"
+            aria-label="Next task"
+          />
+          <input
+            type="number"
+            min="0"
+            value={statusNextCount}
+            onChange={(e) => setStatusNextCount(e.target.value)}
+            placeholder="Count (optional)"
+            aria-label="Next task count"
+          />
+          <input
+            type="text"
+            value={statusAssignee}
+            onChange={(e) => setStatusAssignee(e.target.value)}
+            placeholder="Confirm by"
+            aria-label="Status confirm by"
+          />
+          <input
+            type="datetime-local"
+            value={statusStartAt ? toDatetimeLocalValue(statusStartAt) : ''}
+            onChange={(e) => setStatusStartAt(parseDatetimeLocalValue(e.target.value))}
+            className="statusStartAt"
+            aria-label="Start time"
+          />
+        </div>
+
+        <div className="messagePreview" aria-label="Status message preview">
+          {statusMessage || 'Fill fields to generate a status message.'}
+        </div>
+
+        <div className="messageActions">
+          <button onClick={onCopyStatusMessage} disabled={!statusMessage}>
+            Copy status message
+          </button>
+          {statusCopyStatus === 'copied' && <span className="copyStatus">Copied.</span>}
+          {statusCopyStatus === 'failed' && (
             <span className="copyStatus">Copy failed. Please copy manually.</span>
           )}
         </div>
