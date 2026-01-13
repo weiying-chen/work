@@ -1,14 +1,21 @@
-// Work-time rules: 8:30–17:30 (local time).
+// Work-time rules: 8:00–12:00, 13:00–17:00 (local time).
 // Pure logic: no React, no storage.
 
 export type TimeHM = { h: number; m: number }
 export type WorkBlock = { start: TimeHM; end: TimeHM }
 
 export const WORK_BLOCKS: WorkBlock[] = [
-  { start: { h: 8, m: 30 }, end: { h: 17, m: 30 } },
+  { start: { h: 8, m: 0 }, end: { h: 12, m: 0 } },
+  { start: { h: 13, m: 0 }, end: { h: 17, m: 0 } },
 ]
 
-const PRIMARY_BLOCK = WORK_BLOCKS[0]
+function firstBlock(blocks: WorkBlock[]) {
+  return blocks[0]
+}
+
+function lastBlock(blocks: WorkBlock[]) {
+  return blocks[blocks.length - 1]
+}
 
 export function atLocalTime(baseDay: Date, t: TimeHM) {
   const d = new Date(baseDay)
@@ -116,16 +123,16 @@ export function shouldShowEarlyFinishReminder(now: Date, deadline: Date) {
 
   if (dayStart.getTime() !== deadlineDay.getTime()) return false
 
-  const reminderStart = atLocalTime(dayStart, PRIMARY_BLOCK.start)
+  const reminderStart = atLocalTime(dayStart, firstBlock(WORK_BLOCKS).start)
   const reminderEnd = new Date(reminderStart)
   reminderEnd.setMinutes(reminderEnd.getMinutes() + 30)
 
-  const finishCutoff = atLocalTime(dayStart, PRIMARY_BLOCK.end)
+  const finishCutoff = atLocalTime(dayStart, lastBlock(WORK_BLOCKS).end)
 
   return (
     now.getTime() >= reminderStart.getTime() &&
     now.getTime() < reminderEnd.getTime() &&
-    deadline.getTime() < finishCutoff.getTime()
+    deadline.getTime() <= finishCutoff.getTime()
   )
 }
 
@@ -136,7 +143,7 @@ export function shouldShowTeamsReminder(now: Date, deadline: Date) {
   const deadlineDay = new Date(deadline)
   deadlineDay.setHours(0, 0, 0, 0)
 
-  const dayCutoff = atLocalTime(dayStart, PRIMARY_BLOCK.end)
+  const dayCutoff = atLocalTime(dayStart, lastBlock(WORK_BLOCKS).end)
 
   if (deadlineDay.getTime() !== dayStart.getTime() || deadline.getTime() >= dayCutoff.getTime()) {
     const reminderEnd = new Date(dayCutoff)

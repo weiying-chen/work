@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 
-import { formatTeamsMessage, type TaskEntry } from './utils/deadlineHistory'
+import { formatDuration, formatTeamsMessage, type TaskEntry } from './utils/deadlineHistory'
 import {
   fmtDateTime,
   fmtTime,
@@ -418,7 +418,7 @@ export default function App() {
             {tasks.map((entry, index) => (
               <div key={`${entry.text}-${index}`} className="taskRow">
                 <span>{entry.text}</span>
-                <span>{entry.minutes}分</span>
+                <span>{formatDuration(entry.minutes)}</span>
                 <button onClick={() => removeTaskEntry(index)} aria-label="Remove task">
                   Remove
                 </button>
