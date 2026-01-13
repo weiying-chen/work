@@ -20,7 +20,7 @@ type TeamsMessageOptions = {
   previous: Date
   next: Date
   tasks?: TaskEntry[]
-  task?: string
+  assignment?: string
   assignee?: string
 }
 
@@ -38,7 +38,7 @@ export function formatDuration(totalMinutes: number) {
   return `${minutes}分`
 }
 
-export function formatTeamsMessage({ previous, next, tasks, task, assignee }: TeamsMessageOptions) {
+export function formatTeamsMessage({ previous, next, tasks, assignment, assignee }: TeamsMessageOptions) {
   const sanitizedTasks =
     tasks?.filter((item) => item.text.trim().length > 0 && item.minutes > 0) ?? []
   const totalMinutes = sanitizedTasks.reduce((sum, item) => sum + item.minutes, 0)
@@ -48,11 +48,11 @@ export function formatTeamsMessage({ previous, next, tasks, task, assignee }: Te
       ? `今日做其他事時間是 ${formatDuration(totalMinutes)}\n\n${taskLines}\n\n`
       : ''
   const action = next.getTime() < previous.getTime() ? '提前至' : '延後至'
-  const taskPrefix = task?.trim() ? `${task.trim()}，` : ''
+  const assignmentPrefix = assignment?.trim() ? `${assignment.trim()}，` : ''
   const assigneeText = assignee?.trim() ? `，請${assignee.trim()}幫我確認` : ''
 
   return (
     prefix +
-    `${taskPrefix}deadline由${formatTeamsDate(previous)}，${action}${formatTeamsDate(next)}${assigneeText}，謝謝。`
+    `${assignmentPrefix}deadline由${formatTeamsDate(previous)}，${action}${formatTeamsDate(next)}${assigneeText}，謝謝。`
   )
 }

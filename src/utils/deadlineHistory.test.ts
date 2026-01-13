@@ -21,7 +21,7 @@ describe('formatTeamsMessage', () => {
       previous,
       next,
       tasks,
-      task: '心靈講座（看見自己的天才 - 盧蘇偉）',
+      assignment: '心靈講座（看見自己的天才 - 盧蘇偉）',
       assignee: 'Syharn Shen',
     })
 

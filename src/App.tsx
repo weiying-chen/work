@@ -28,10 +28,10 @@ const LS_PREV_CHANGED_KEY = 'aliveline:previous-deadline-changed-iso'
 const LS_PREV_TASKS_KEY = 'aliveline:previous-tasks'
 const LS_TASKS_KEY = 'aliveline:tasks'
 const LS_CHANGE_BASE_KEY = 'aliveline:change-base-deadline-iso'
-const LS_MESSAGE_TASK_KEY = 'aliveline:message-task'
+const LS_MESSAGE_ASSIGNMENT_KEY = 'aliveline:message-assignment'
 const LS_MESSAGE_ASSIGNEE_KEY = 'aliveline:message-assignee'
-const LS_STATUS_COMPLETED_TASK_KEY = 'aliveline:status-completed-task'
-const LS_STATUS_NEXT_TASK_KEY = 'aliveline:status-next-task'
+const LS_STATUS_COMPLETED_ASSIGNMENT_KEY = 'aliveline:status-completed-assignment'
+const LS_STATUS_NEXT_ASSIGNMENT_KEY = 'aliveline:status-next-assignment'
 const LS_STATUS_NEXT_COUNT_KEY = 'aliveline:status-next-count'
 const LS_STATUS_ASSIGNEE_KEY = 'aliveline:status-assignee'
 const LS_STATUS_START_KEY = 'aliveline:status-start-iso'
@@ -89,15 +89,17 @@ export default function App() {
   const [taskText, setTaskText] = useState('')
   const [taskHours, setTaskHours] = useState('')
   const [taskMinutes, setTaskMinutes] = useState('')
-  const [messageTask, setMessageTask] = useState(() => localStorage.getItem(LS_MESSAGE_TASK_KEY) ?? '')
+  const [messageAssignment, setMessageAssignment] = useState(
+    () => localStorage.getItem(LS_MESSAGE_ASSIGNMENT_KEY) ?? ''
+  )
   const [messageAssignee, setMessageAssignee] = useState(
     () => localStorage.getItem(LS_MESSAGE_ASSIGNEE_KEY) ?? ''
   )
-  const [statusCompletedTask, setStatusCompletedTask] = useState(
-    () => localStorage.getItem(LS_STATUS_COMPLETED_TASK_KEY) ?? ''
+  const [statusCompletedAssignment, setStatusCompletedAssignment] = useState(
+    () => localStorage.getItem(LS_STATUS_COMPLETED_ASSIGNMENT_KEY) ?? ''
   )
-  const [statusNextTask, setStatusNextTask] = useState(
-    () => localStorage.getItem(LS_STATUS_NEXT_TASK_KEY) ?? ''
+  const [statusNextAssignment, setStatusNextAssignment] = useState(
+    () => localStorage.getItem(LS_STATUS_NEXT_ASSIGNMENT_KEY) ?? ''
   )
   const [statusNextCount, setStatusNextCount] = useState(
     () => localStorage.getItem(LS_STATUS_NEXT_COUNT_KEY) ?? ''
@@ -149,8 +151,8 @@ export default function App() {
   }, [changeBaseDeadline])
 
   useEffect(() => {
-    localStorage.setItem(LS_MESSAGE_TASK_KEY, messageTask)
-  }, [messageTask])
+    localStorage.setItem(LS_MESSAGE_ASSIGNMENT_KEY, messageAssignment)
+  }, [messageAssignment])
 
   useEffect(() => {
     const todayKey = dateKey(now)
@@ -167,7 +169,7 @@ export default function App() {
     setTaskMinutes('')
     setChangeBaseDeadline(null)
     setPreviousTasks([])
-    setMessageTask('')
+    setMessageAssignment('')
     setMessageAssignee('')
   }, [now])
 
@@ -246,12 +248,12 @@ export default function App() {
   }, [messageAssignee])
 
   useEffect(() => {
-    localStorage.setItem(LS_STATUS_COMPLETED_TASK_KEY, statusCompletedTask)
-  }, [statusCompletedTask])
+    localStorage.setItem(LS_STATUS_COMPLETED_ASSIGNMENT_KEY, statusCompletedAssignment)
+  }, [statusCompletedAssignment])
 
   useEffect(() => {
-    localStorage.setItem(LS_STATUS_NEXT_TASK_KEY, statusNextTask)
-  }, [statusNextTask])
+    localStorage.setItem(LS_STATUS_NEXT_ASSIGNMENT_KEY, statusNextAssignment)
+  }, [statusNextAssignment])
 
   useEffect(() => {
     localStorage.setItem(LS_STATUS_NEXT_COUNT_KEY, statusNextCount)
@@ -299,10 +301,10 @@ export default function App() {
       previous: previousDeadline,
       next: deadline,
       tasks: tasks.length > 0 ? tasks : previousTasks,
-      task: messageTask,
+      assignment: messageAssignment,
       assignee: messageAssignee,
     })
-  }, [deadline, messageAssignee, messageTask, previousDeadline, previousTasks, tasks])
+  }, [deadline, messageAssignee, messageAssignment, previousDeadline, previousTasks, tasks])
 
   useEffect(() => {
     setCopyStatus('idle')
@@ -313,8 +315,8 @@ export default function App() {
     const parsedCount = statusNextCount.trim() ? Number(statusNextCount) : undefined
     const count = Number.isFinite(parsedCount) ? parsedCount : undefined
     return formatStatusMessage({
-      completedTask: statusCompletedTask,
-      nextTask: statusNextTask,
+      completedAssignment: statusCompletedAssignment,
+      nextAssignment: statusNextAssignment,
       nextTaskCount: count,
       assignee: statusAssignee,
       start: statusStartAt,
@@ -323,9 +325,9 @@ export default function App() {
   }, [
     deadline,
     statusAssignee,
-    statusCompletedTask,
+    statusCompletedAssignment,
     statusNextCount,
-    statusNextTask,
+    statusNextAssignment,
     statusStartAt,
   ])
 
@@ -433,8 +435,8 @@ export default function App() {
         <div className="messageFields">
           <input
             type="text"
-            value={messageTask}
-            onChange={(e) => setMessageTask(e.target.value)}
+            value={messageAssignment}
+            onChange={(e) => setMessageAssignment(e.target.value)}
             placeholder="Assignment (optional)"
             aria-label="Assignment name"
           />
@@ -513,15 +515,15 @@ export default function App() {
         <div className="statusFields">
           <input
             type="text"
-            value={statusCompletedTask}
-            onChange={(e) => setStatusCompletedTask(e.target.value)}
+            value={statusCompletedAssignment}
+            onChange={(e) => setStatusCompletedAssignment(e.target.value)}
             placeholder="Completed assignment (short)"
             aria-label="Completed assignment"
           />
           <input
             type="text"
-            value={statusNextTask}
-            onChange={(e) => setStatusNextTask(e.target.value)}
+            value={statusNextAssignment}
+            onChange={(e) => setStatusNextAssignment(e.target.value)}
             placeholder="Next assignment"
             aria-label="Next assignment"
           />

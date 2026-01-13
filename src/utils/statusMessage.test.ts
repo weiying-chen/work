@@ -7,8 +7,8 @@ describe('formatStatusMessage', () => {
     const start = new Date(2026, 0, 13, 16, 10)
     const deadline = new Date(2026, 0, 16, 9, 10)
     const message = formatStatusMessage({
-      completedTask: '"三"人文講堂',
-      nextTask: '仁心慧語 (呂紹睿)',
+      completedAssignment: '"三"人文講堂',
+      nextAssignment: '仁心慧語 (呂紹睿)',
       nextTaskCount: 6,
       assignee: 'Emily Ding',
       start,
@@ -24,8 +24,8 @@ describe('formatStatusMessage', () => {
     const start = new Date(2026, 0, 13, 10, 5)
     const deadline = new Date(2026, 0, 14, 9, 0)
     const message = formatStatusMessage({
-      completedTask: '人文講堂',
-      nextTask: '仁心慧語',
+      completedAssignment: '人文講堂',
+      nextAssignment: '仁心慧語',
       assignee: 'Alex',
       start,
       deadline,

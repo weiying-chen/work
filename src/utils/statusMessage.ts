@@ -3,8 +3,8 @@ import { pad2 } from './time'
 const WEEKDAY_CN = ['日', '一', '二', '三', '四', '五', '六']
 
 export type StatusMessageOptions = {
-  completedTask: string
-  nextTask: string
+  completedAssignment: string
+  nextAssignment: string
   nextTaskCount?: number
   assignee: string
   start: Date
@@ -20,8 +20,8 @@ export function formatStatusDate(d: Date) {
   return `${month}/${day} (${weekday}) ${hours}:${minutes}`
 }
 
-function formatNextTask(nextTask: string, count?: number) {
-  const trimmed = nextTask.trim()
+function formatNextAssignment(nextAssignment: string, count?: number) {
+  const trimmed = nextAssignment.trim()
   if (!trimmed) return ''
 
   const countText = Number.isFinite(count) && (count as number) > 0 ? `${count}集` : ''
@@ -29,14 +29,14 @@ function formatNextTask(nextTask: string, count?: number) {
 }
 
 export function formatStatusMessage(options: StatusMessageOptions) {
-  const completedTask = options.completedTask.trim()
-  const nextTask = formatNextTask(options.nextTask, options.nextTaskCount)
+  const completedAssignment = options.completedAssignment.trim()
+  const nextAssignment = formatNextAssignment(options.nextAssignment, options.nextTaskCount)
   const assignee = options.assignee.trim()
 
-  if (!completedTask || !nextTask || !assignee) return ''
+  if (!completedAssignment || !nextAssignment || !assignee) return ''
 
   return (
-    `已完成${completedTask}，接下來會開始翻譯${nextTask}，` +
+    `已完成${completedAssignment}，接下來會開始翻譯${nextAssignment}，` +
     `再麻煩${assignee}便時幫忙設deadline，` +
     `從${formatStatusDate(options.start)}起算，deadline為${formatStatusDate(options.deadline)}，謝謝。`
   )
