@@ -35,6 +35,8 @@ const LS_STATUS_NEXT_ASSIGNMENT_KEY = 'aliveline:status-next-assignment'
 const LS_STATUS_NEXT_COUNT_KEY = 'aliveline:status-next-count'
 const LS_STATUS_ASSIGNEE_KEY = 'aliveline:status-assignee'
 const LS_STATUS_START_KEY = 'aliveline:status-start-iso'
+const LS_PANEL_TASKS_OPEN_KEY = 'aliveline:panel-tasks-open'
+const LS_PANEL_STATUS_OPEN_KEY = 'aliveline:panel-status-open'
 const LS_DAILY_CLEAR_KEY = 'aliveline:daily-clear'
 const LS_REMINDER_NOTIFIED_KEY = 'aliveline:reminder-notified'
 const LS_REMINDER_REQUESTED_KEY = 'aliveline:reminder-requested'
@@ -64,6 +66,12 @@ function readStoredEntries(key: string) {
   } catch {
     return []
   }
+}
+
+function readStoredBool(key: string, fallback: boolean) {
+  const saved = localStorage.getItem(key)
+  if (saved === null) return fallback
+  return saved === 'true'
 }
 
 export default function App() {
@@ -112,6 +120,12 @@ export default function App() {
   )
   const [copyStatus, setCopyStatus] = useState<'idle' | 'copied' | 'failed'>('idle')
   const [statusCopyStatus, setStatusCopyStatus] = useState<'idle' | 'copied' | 'failed'>('idle')
+  const [isTasksPanelOpen, setIsTasksPanelOpen] = useState(() =>
+    readStoredBool(LS_PANEL_TASKS_OPEN_KEY, false)
+  )
+  const [isStatusPanelOpen, setIsStatusPanelOpen] = useState(() =>
+    readStoredBool(LS_PANEL_STATUS_OPEN_KEY, false)
+  )
 
   useEffect(() => {
     const id = setInterval(() => setNow(new Date()), 1000)
@@ -262,6 +276,14 @@ export default function App() {
   useEffect(() => {
     localStorage.setItem(LS_STATUS_ASSIGNEE_KEY, statusAssignee)
   }, [statusAssignee])
+
+  useEffect(() => {
+    localStorage.setItem(LS_PANEL_TASKS_OPEN_KEY, String(isTasksPanelOpen))
+  }, [isTasksPanelOpen])
+
+  useEffect(() => {
+    localStorage.setItem(LS_PANEL_STATUS_OPEN_KEY, String(isStatusPanelOpen))
+  }, [isStatusPanelOpen])
 
   useEffect(() => {
     if (statusStartAt) {
@@ -431,139 +453,167 @@ export default function App() {
       </div>
 
       <div className="message">
-        <div className="label">Add tasks</div>
-        <div className="messageFields">
-          <input
-            type="text"
-            value={messageAssignment}
-            onChange={(e) => setMessageAssignment(e.target.value)}
-            placeholder="Assignment (optional)"
-            aria-label="Assignment name"
-          />
-          <input
-            type="text"
-            value={messageAssignee}
-            onChange={(e) => setMessageAssignee(e.target.value)}
-            placeholder="Confirm by (optional)"
-            aria-label="Confirm by"
-          />
-        </div>
-
-        <div className="taskFields">
-          <input
-            type="text"
-            value={taskText}
-            onChange={(e) => setTaskText(e.target.value)}
-            placeholder="Task item"
-            aria-label="Task item"
-          />
-          <input
-            type="number"
-            min="0"
-            value={taskHours}
-            onChange={(e) => setTaskHours(e.target.value)}
-            placeholder="Hours"
-            aria-label="Hours"
-          />
-          <input
-            type="number"
-            min="0"
-            value={taskMinutes}
-            onChange={(e) => setTaskMinutes(e.target.value)}
-            placeholder="Minutes"
-            aria-label="Minutes"
-          />
+        <div className="messageHeader">
+          <div className="label">Add tasks</div>
           <button
-            onClick={addTaskEntry}
-            disabled={!taskText.trim() || minutesFromTimeParts(taskHours, taskMinutes) === null}
+            type="button"
+            className="toggleButton"
+            onClick={() => setIsTasksPanelOpen((prev) => !prev)}
+            aria-expanded={isTasksPanelOpen}
           >
-            Add task
+            {isTasksPanelOpen ? 'Hide' : 'Show'}
           </button>
         </div>
+        {isTasksPanelOpen && (
+          <div className="messageBody">
+            <div className="messageFields">
+              <input
+                type="text"
+                value={messageAssignment}
+                onChange={(e) => setMessageAssignment(e.target.value)}
+                placeholder="Assignment (optional)"
+                aria-label="Assignment name"
+              />
+              <input
+                type="text"
+                value={messageAssignee}
+                onChange={(e) => setMessageAssignee(e.target.value)}
+                placeholder="Confirm by (optional)"
+                aria-label="Confirm by"
+              />
+            </div>
 
-        {tasks.length > 0 && (
-          <div className="taskList">
-            {tasks.map((entry, index) => (
-              <div key={`${entry.text}-${index}`} className="taskRow">
-                <span>{entry.text}</span>
-                <span>{formatDuration(entry.minutes)}</span>
-                <button onClick={() => removeTaskEntry(index)} aria-label="Remove task">
-                  Remove
-                </button>
+            <div className="taskFields">
+              <input
+                type="text"
+                value={taskText}
+                onChange={(e) => setTaskText(e.target.value)}
+                placeholder="Task item"
+                aria-label="Task item"
+              />
+              <input
+                type="number"
+                min="0"
+                value={taskHours}
+                onChange={(e) => setTaskHours(e.target.value)}
+                placeholder="Hours"
+                aria-label="Hours"
+              />
+              <input
+                type="number"
+                min="0"
+                value={taskMinutes}
+                onChange={(e) => setTaskMinutes(e.target.value)}
+                placeholder="Minutes"
+                aria-label="Minutes"
+              />
+              <button
+                onClick={addTaskEntry}
+                disabled={!taskText.trim() || minutesFromTimeParts(taskHours, taskMinutes) === null}
+              >
+                Add task
+              </button>
+            </div>
+
+            {tasks.length > 0 && (
+              <div className="taskList">
+                {tasks.map((entry, index) => (
+                  <div key={`${entry.text}-${index}`} className="taskRow">
+                    <span>{entry.text}</span>
+                    <span>{formatDuration(entry.minutes)}</span>
+                    <button onClick={() => removeTaskEntry(index)} aria-label="Remove task">
+                      Remove
+                    </button>
+                  </div>
+                ))}
               </div>
-            ))}
+            )}
+
+            <div className="messagePreview" aria-label="Teams message preview">
+              {teamsMessage || 'Add tasks to generate a Teams message preview.'}
+            </div>
+
+            <div className="messageActions">
+              <button onClick={onCopyTeamsMessage} disabled={!previousDeadline}>
+                Copy Teams message
+              </button>
+              {copyStatus === 'copied' && <span className="copyStatus">Copied.</span>}
+              {copyStatus === 'failed' && (
+                <span className="copyStatus">Copy failed. Please copy manually.</span>
+              )}
+            </div>
           </div>
         )}
-
-        <div className="messagePreview" aria-label="Teams message preview">
-          {teamsMessage || 'Add tasks to generate a Teams message preview.'}
-        </div>
-
-        <div className="messageActions">
-          <button onClick={onCopyTeamsMessage} disabled={!previousDeadline}>
-            Copy Teams message
-          </button>
-          {copyStatus === 'copied' && <span className="copyStatus">Copied.</span>}
-          {copyStatus === 'failed' && (
-            <span className="copyStatus">Copy failed. Please copy manually.</span>
-          )}
-        </div>
       </div>
 
       <div className="message">
-        <div className="label">Assignment status + next deadline</div>
-        <div className="statusFields">
-          <input
-            type="text"
-            value={statusCompletedAssignment}
-            onChange={(e) => setStatusCompletedAssignment(e.target.value)}
-            placeholder="Completed assignment (short)"
-            aria-label="Completed assignment"
-          />
-          <input
-            type="text"
-            value={statusNextAssignment}
-            onChange={(e) => setStatusNextAssignment(e.target.value)}
-            placeholder="Next assignment"
-            aria-label="Next assignment"
-          />
-          <input
-            type="number"
-            min="0"
-            value={statusNextCount}
-            onChange={(e) => setStatusNextCount(e.target.value)}
-            placeholder="File count (optional)"
-            aria-label="Next assignment file count"
-          />
-          <input
-            type="text"
-            value={statusAssignee}
-            onChange={(e) => setStatusAssignee(e.target.value)}
-            placeholder="Confirm by"
-            aria-label="Status confirm by"
-          />
-          <input
-            type="datetime-local"
-            value={statusStartAt ? toDatetimeLocalValue(statusStartAt) : ''}
-            onChange={(e) => setStatusStartAt(parseDatetimeLocalValue(e.target.value))}
-            className="statusStartAt"
-            aria-label="Start time"
-          />
-        </div>
-
-        <div className="messagePreview" aria-label="Status message preview">
-          {statusMessage || 'Fill fields to generate a status message.'}
-        </div>
-
-        <div className="messageActions">
-          <button onClick={onCopyStatusMessage} disabled={!statusMessage}>
-            Copy status message
+        <div className="messageHeader">
+          <div className="label">Assignment status + next deadline</div>
+          <button
+            type="button"
+            className="toggleButton"
+            onClick={() => setIsStatusPanelOpen((prev) => !prev)}
+            aria-expanded={isStatusPanelOpen}
+          >
+            {isStatusPanelOpen ? 'Hide' : 'Show'}
           </button>
-          {statusCopyStatus === 'copied' && <span className="copyStatus">Copied.</span>}
-          {statusCopyStatus === 'failed' && (
-            <span className="copyStatus">Copy failed. Please copy manually.</span>
-          )}
         </div>
+        {isStatusPanelOpen && (
+          <div className="messageBody">
+            <div className="statusFields">
+              <input
+                type="text"
+                value={statusCompletedAssignment}
+                onChange={(e) => setStatusCompletedAssignment(e.target.value)}
+                placeholder="Completed assignment (short)"
+                aria-label="Completed assignment"
+              />
+              <input
+                type="text"
+                value={statusNextAssignment}
+                onChange={(e) => setStatusNextAssignment(e.target.value)}
+                placeholder="Next assignment"
+                aria-label="Next assignment"
+              />
+              <input
+                type="number"
+                min="0"
+                value={statusNextCount}
+                onChange={(e) => setStatusNextCount(e.target.value)}
+                placeholder="File count (optional)"
+                aria-label="Next assignment file count"
+              />
+              <input
+                type="text"
+                value={statusAssignee}
+                onChange={(e) => setStatusAssignee(e.target.value)}
+                placeholder="Confirm by"
+                aria-label="Status confirm by"
+              />
+              <input
+                type="datetime-local"
+                value={statusStartAt ? toDatetimeLocalValue(statusStartAt) : ''}
+                onChange={(e) => setStatusStartAt(parseDatetimeLocalValue(e.target.value))}
+                className="statusStartAt"
+                aria-label="Start time"
+              />
+            </div>
+
+            <div className="messagePreview" aria-label="Status message preview">
+              {statusMessage || 'Fill fields to generate a status message.'}
+            </div>
+
+            <div className="messageActions">
+              <button onClick={onCopyStatusMessage} disabled={!statusMessage}>
+                Copy status message
+              </button>
+              {statusCopyStatus === 'copied' && <span className="copyStatus">Copied.</span>}
+              {statusCopyStatus === 'failed' && (
+                <span className="copyStatus">Copy failed. Please copy manually.</span>
+              )}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   )
