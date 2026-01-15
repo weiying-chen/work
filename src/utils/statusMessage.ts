@@ -1,6 +1,4 @@
-import { pad2 } from './time'
-
-const WEEKDAY_CN = ['日', '一', '二', '三', '四', '五', '六']
+import { formatTeamsDate } from './deadlineHistory'
 
 export type StatusMessageOptions = {
   completedAssignment: string
@@ -9,15 +7,6 @@ export type StatusMessageOptions = {
   assignee: string
   start: Date
   deadline: Date
-}
-
-export function formatStatusDate(d: Date) {
-  const month = d.getMonth() + 1
-  const day = d.getDate()
-  const weekday = WEEKDAY_CN[d.getDay()]
-  const hours = pad2(d.getHours())
-  const minutes = pad2(d.getMinutes())
-  return `${month}/${day} (${weekday}) ${hours}:${minutes}`
 }
 
 function formatNextAssignment(nextAssignment: string, count?: number) {
@@ -38,6 +27,6 @@ export function formatStatusMessage(options: StatusMessageOptions) {
   return (
     `已完成${completedAssignment}，接下來會開始翻譯${nextAssignment}，` +
     `再麻煩${assignee}便時幫忙設deadline，` +
-    `從${formatStatusDate(options.start)}起算，deadline為${formatStatusDate(options.deadline)}，謝謝。`
+    `從${formatTeamsDate(options.start)}起算，deadline為${formatTeamsDate(options.deadline)}，謝謝。`
   )
 }

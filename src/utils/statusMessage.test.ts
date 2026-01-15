@@ -16,7 +16,7 @@ describe('formatStatusMessage', () => {
     })
 
     expect(message).toBe(
-      '已完成"三"人文講堂，接下來會開始翻譯6集仁心慧語 (呂紹睿)，再麻煩Emily Ding便時幫忙設deadline，從1/13 (二) 16:10起算，deadline為1/16 (五) 09:10，謝謝。'
+      '已完成"三"人文講堂，接下來會開始翻譯6集仁心慧語 (呂紹睿)，再麻煩Emily Ding便時幫忙設deadline，從1/13（二）16:10起算，deadline為1/16（五）09:10，謝謝。'
     )
   })
 
@@ -32,7 +32,7 @@ describe('formatStatusMessage', () => {
     })
 
     expect(message).toBe(
-      '已完成人文講堂，接下來會開始翻譯仁心慧語，再麻煩Alex便時幫忙設deadline，從1/13 (二) 10:05起算，deadline為1/14 (三) 09:00，謝謝。'
+      '已完成人文講堂，接下來會開始翻譯仁心慧語，再麻煩Alex便時幫忙設deadline，從1/13（二）10:05起算，deadline為1/14（三）09:00，謝謝。'
     )
   })
 })
