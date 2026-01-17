@@ -460,7 +460,7 @@ export default function App() {
           aria-expanded={isTasksPanelOpen}
           aria-controls="tasks-panel"
         >
-          <span className="messageTitle">Add tasks</span>
+          <span className="messageTitle">Deadline extension message</span>
         </button>
         <div
           id="tasks-panel"
@@ -561,7 +561,7 @@ export default function App() {
           aria-expanded={isStatusPanelOpen}
           aria-controls="status-panel"
         >
-          <span className="messageTitle">Assignment status + next deadline</span>
+          <span className="messageTitle">Next assignment message</span>
         </button>
         <div
           id="status-panel"
