@@ -117,7 +117,7 @@ input {
 }
 
 .message {
-  padding: var(--space-3) 0;
+  padding: 0;
   max-width: 640px;
   width: 100%;
   margin: 0 auto;
@@ -127,6 +127,9 @@ input {
 
 .message:last-of-type {
   border-bottom: 0;
+}
+
+.message + .message {
 }
 
 .messageHeader {
@@ -273,6 +276,7 @@ input {
   gap: var(--space-2);
   justify-content: center;
   align-items: center;
+  margin-bottom: var(--space-3);
 }
 
 .copyStatus {

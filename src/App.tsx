@@ -447,174 +447,176 @@ export default function App() {
       </div>
 
       <div className="message" data-state={isTasksPanelOpen ? 'open' : 'closed'}>
-        <button
-          type="button"
-          className="messageHeader"
-          onClick={() => setIsTasksPanelOpen((prev) => !prev)}
-          aria-expanded={isTasksPanelOpen}
-          aria-controls="tasks-panel"
-        >
-          <span className="messageTitle">Deadline extension message</span>
-        </button>
-        <div
-          id="tasks-panel"
-          className="messagePanel"
-          data-state={isTasksPanelOpen ? 'open' : 'closed'}
-          aria-hidden={!isTasksPanelOpen}
-        >
-          <div className="messagePanelInner">
-            <fieldset disabled={!isTasksPanelOpen} className="messageFieldset">
-              <div className="messageBody">
-            <div className="messageFields">
-              <input
-                type="text"
-                value={messageAssignment}
-                onChange={(e) => setMessageAssignment(e.target.value)}
-                placeholder="Assignment"
-                aria-label="Assignment name"
-              />
-              <input
-                type="text"
-                value={messageAssignee}
-                onChange={(e) => setMessageAssignee(e.target.value)}
-                placeholder="Confirm by"
-                aria-label="Confirm by"
-              />
-            </div>
+          <button
+            type="button"
+            className="messageHeader"
+            onClick={() => setIsTasksPanelOpen((prev) => !prev)}
+            aria-expanded={isTasksPanelOpen}
+            aria-controls="tasks-panel"
+          >
+            <span className="messageTitle">Deadline extension message</span>
+          </button>
+          <div
+            id="tasks-panel"
+            className="messagePanel"
+            data-state={isTasksPanelOpen ? 'open' : 'closed'}
+            aria-hidden={!isTasksPanelOpen}
+          >
+            <div className="messagePanelInner">
+              <fieldset disabled={!isTasksPanelOpen} className="messageFieldset">
+                <div className="messageBody">
+                  <div className="messageFields">
+                    <input
+                      type="text"
+                      value={messageAssignment}
+                      onChange={(e) => setMessageAssignment(e.target.value)}
+                      placeholder="Assignment"
+                      aria-label="Assignment name"
+                    />
+                    <input
+                      type="text"
+                      value={messageAssignee}
+                      onChange={(e) => setMessageAssignee(e.target.value)}
+                      placeholder="Confirm by"
+                      aria-label="Confirm by"
+                    />
+                  </div>
 
-            <div className="taskFields">
-              <input
-                type="text"
-                value={taskText}
-                onChange={(e) => setTaskText(e.target.value)}
-                placeholder="Task item"
-                aria-label="Task item"
-              />
-              <input
-                type="number"
-                min="0"
-                value={taskHours}
-                onChange={(e) => setTaskHours(e.target.value)}
-                placeholder="Hours"
-                aria-label="Hours"
-              />
-              <input
-                type="number"
-                min="0"
-                value={taskMinutes}
-                onChange={(e) => setTaskMinutes(e.target.value)}
-                placeholder="Minutes"
-                aria-label="Minutes"
-              />
-              <button
-                onClick={addTaskEntry}
-                disabled={!taskText.trim() || minutesFromTimeParts(taskHours, taskMinutes) === null}
-              >
-                Add task
-              </button>
-            </div>
-
-            {tasks.length > 0 && (
-              <div className="taskList">
-                {tasks.map((entry, index) => (
-                  <div key={`${entry.text}-${index}`} className="taskRow">
-                    <span>{entry.text}</span>
-                    <span>{formatDuration(entry.minutes)}</span>
-                    <button onClick={() => removeTaskEntry(index)} aria-label="Remove task">
-                      Remove
+                  <div className="taskFields">
+                    <input
+                      type="text"
+                      value={taskText}
+                      onChange={(e) => setTaskText(e.target.value)}
+                      placeholder="Task item"
+                      aria-label="Task item"
+                    />
+                    <input
+                      type="number"
+                      min="0"
+                      value={taskHours}
+                      onChange={(e) => setTaskHours(e.target.value)}
+                      placeholder="Hours"
+                      aria-label="Hours"
+                    />
+                    <input
+                      type="number"
+                      min="0"
+                      value={taskMinutes}
+                      onChange={(e) => setTaskMinutes(e.target.value)}
+                      placeholder="Minutes"
+                      aria-label="Minutes"
+                    />
+                    <button
+                      onClick={addTaskEntry}
+                      disabled={
+                        !taskText.trim() || minutesFromTimeParts(taskHours, taskMinutes) === null
+                      }
+                    >
+                      Add task
                     </button>
                   </div>
-                ))}
-              </div>
-            )}
 
-            <div className="messagePreview" aria-label="Teams message preview">
-              {teamsMessage || 'Fill all fields to generate a Teams message preview.'}
-            </div>
+                  {tasks.length > 0 && (
+                    <div className="taskList">
+                      {tasks.map((entry, index) => (
+                        <div key={`${entry.text}-${index}`} className="taskRow">
+                          <span>{entry.text}</span>
+                          <span>{formatDuration(entry.minutes)}</span>
+                          <button onClick={() => removeTaskEntry(index)} aria-label="Remove task">
+                            Remove
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
 
-            <div className="messageActions">
-              <button onClick={onCopyTeamsMessage} disabled={!teamsMessage}>
-                Copy Teams message
-              </button>
-              {copyStatus === 'copied' && <span className="copyStatus">Copied.</span>}
-              {copyStatus === 'failed' && (
-                <span className="copyStatus">Copy failed. Please copy manually.</span>
-              )}
+                  <div className="messagePreview" aria-label="Teams message preview">
+                    {teamsMessage || 'Fill all fields to generate a Teams message preview.'}
+                  </div>
+
+                  <div className="messageActions">
+                    <button onClick={onCopyTeamsMessage} disabled={!teamsMessage}>
+                      Copy Teams message
+                    </button>
+                    {copyStatus === 'copied' && <span className="copyStatus">Copied.</span>}
+                    {copyStatus === 'failed' && (
+                      <span className="copyStatus">Copy failed. Please copy manually.</span>
+                    )}
+                  </div>
+                </div>
+              </fieldset>
             </div>
-              </div>
-            </fieldset>
           </div>
-        </div>
       </div>
 
       <div className="message" data-state={isStatusPanelOpen ? 'open' : 'closed'}>
-        <button
-          type="button"
-          className="messageHeader"
-          onClick={() => setIsStatusPanelOpen((prev) => !prev)}
-          aria-expanded={isStatusPanelOpen}
-          aria-controls="status-panel"
-        >
-          <span className="messageTitle">Next assignment message</span>
-        </button>
-        <div
-          id="status-panel"
-          className="messagePanel"
-          data-state={isStatusPanelOpen ? 'open' : 'closed'}
-          aria-hidden={!isStatusPanelOpen}
-        >
-          <div className="messagePanelInner">
-            <fieldset disabled={!isStatusPanelOpen} className="messageFieldset">
-              <div className="messageBody">
-            <div className="statusFields">
-              <input
-                type="text"
-                value={statusCompletedAssignment}
-                onChange={(e) => setStatusCompletedAssignment(e.target.value)}
-                placeholder="Completed assignment"
-                aria-label="Completed assignment"
-              />
-              <input
-                type="text"
-                value={statusNextAssignment}
-                onChange={(e) => setStatusNextAssignment(e.target.value)}
-                placeholder="Next assignment"
-                aria-label="Next assignment"
-              />
-              <input
-                type="text"
-                value={statusAssignee}
-                onChange={(e) => setStatusAssignee(e.target.value)}
-                placeholder="Confirm by"
-                aria-label="Status confirm by"
-                className="statusConfirmBy"
-              />
-              <input
-                type="datetime-local"
-                value={statusStartAt ? toDatetimeLocalValue(statusStartAt) : ''}
-                onChange={(e) => setStatusStartAt(parseDatetimeLocalValue(e.target.value))}
-                className="statusStartAt"
-                aria-label="Start time"
-              />
-            </div>
+          <button
+            type="button"
+            className="messageHeader"
+            onClick={() => setIsStatusPanelOpen((prev) => !prev)}
+            aria-expanded={isStatusPanelOpen}
+            aria-controls="status-panel"
+          >
+            <span className="messageTitle">Next assignment message</span>
+          </button>
+          <div
+            id="status-panel"
+            className="messagePanel"
+            data-state={isStatusPanelOpen ? 'open' : 'closed'}
+            aria-hidden={!isStatusPanelOpen}
+          >
+            <div className="messagePanelInner">
+              <fieldset disabled={!isStatusPanelOpen} className="messageFieldset">
+                <div className="messageBody">
+                  <div className="statusFields">
+                    <input
+                      type="text"
+                      value={statusCompletedAssignment}
+                      onChange={(e) => setStatusCompletedAssignment(e.target.value)}
+                      placeholder="Completed assignment"
+                      aria-label="Completed assignment"
+                    />
+                    <input
+                      type="text"
+                      value={statusNextAssignment}
+                      onChange={(e) => setStatusNextAssignment(e.target.value)}
+                      placeholder="Next assignment"
+                      aria-label="Next assignment"
+                    />
+                    <input
+                      type="text"
+                      value={statusAssignee}
+                      onChange={(e) => setStatusAssignee(e.target.value)}
+                      placeholder="Confirm by"
+                      aria-label="Status confirm by"
+                      className="statusConfirmBy"
+                    />
+                    <input
+                      type="datetime-local"
+                      value={statusStartAt ? toDatetimeLocalValue(statusStartAt) : ''}
+                      onChange={(e) => setStatusStartAt(parseDatetimeLocalValue(e.target.value))}
+                      className="statusStartAt"
+                      aria-label="Start time"
+                    />
+                  </div>
 
-            <div className="messagePreview" aria-label="Status message preview">
-              {statusMessage || 'Fill all fields to generate a status message.'}
-            </div>
+                  <div className="messagePreview" aria-label="Status message preview">
+                    {statusMessage || 'Fill all fields to generate a status message.'}
+                  </div>
 
-            <div className="messageActions">
-              <button onClick={onCopyStatusMessage} disabled={!statusMessage}>
-                Copy status message
-              </button>
-              {statusCopyStatus === 'copied' && <span className="copyStatus">Copied.</span>}
-              {statusCopyStatus === 'failed' && (
-                <span className="copyStatus">Copy failed. Please copy manually.</span>
-              )}
+                  <div className="messageActions">
+                    <button onClick={onCopyStatusMessage} disabled={!statusMessage}>
+                      Copy status message
+                    </button>
+                    {statusCopyStatus === 'copied' && <span className="copyStatus">Copied.</span>}
+                    {statusCopyStatus === 'failed' && (
+                      <span className="copyStatus">Copy failed. Please copy manually.</span>
+                    )}
+                  </div>
+                </div>
+              </fieldset>
             </div>
-              </div>
-            </fieldset>
           </div>
-        </div>
       </div>
     </div>
   )
