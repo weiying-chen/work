@@ -3,13 +3,12 @@ import { describe, expect, it } from 'vitest'
 import { formatStatusMessage } from './statusMessage'
 
 describe('formatStatusMessage', () => {
-  it('formats a full status message with count and metadata', () => {
+  it('formats a full status message with metadata', () => {
     const start = new Date(2026, 0, 13, 16, 10)
     const deadline = new Date(2026, 0, 16, 9, 10)
     const message = formatStatusMessage({
       completedAssignment: '"三"人文講堂',
-      nextAssignment: '仁心慧語 (呂紹睿)',
-      nextTaskCount: 6,
+      nextAssignment: '6集仁心慧語 (呂紹睿)',
       assignee: 'Emily Ding',
       start,
       deadline,
@@ -20,7 +19,7 @@ describe('formatStatusMessage', () => {
     )
   })
 
-  it('formats without count or metadata', () => {
+  it('formats without metadata', () => {
     const start = new Date(2026, 0, 13, 10, 5)
     const deadline = new Date(2026, 0, 14, 9, 0)
     const message = formatStatusMessage({

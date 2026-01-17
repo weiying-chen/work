@@ -32,7 +32,6 @@ const LS_MESSAGE_ASSIGNMENT_KEY = 'aliveline:message-assignment'
 const LS_MESSAGE_ASSIGNEE_KEY = 'aliveline:message-assignee'
 const LS_STATUS_COMPLETED_ASSIGNMENT_KEY = 'aliveline:status-completed-assignment'
 const LS_STATUS_NEXT_ASSIGNMENT_KEY = 'aliveline:status-next-assignment'
-const LS_STATUS_NEXT_COUNT_KEY = 'aliveline:status-next-count'
 const LS_STATUS_ASSIGNEE_KEY = 'aliveline:status-assignee'
 const LS_STATUS_START_KEY = 'aliveline:status-start-iso'
 const LS_PANEL_TASKS_OPEN_KEY = 'aliveline:panel-tasks-open'
@@ -108,9 +107,6 @@ export default function App() {
   )
   const [statusNextAssignment, setStatusNextAssignment] = useState(
     () => localStorage.getItem(LS_STATUS_NEXT_ASSIGNMENT_KEY) ?? ''
-  )
-  const [statusNextCount, setStatusNextCount] = useState(
-    () => localStorage.getItem(LS_STATUS_NEXT_COUNT_KEY) ?? ''
   )
   const [statusAssignee, setStatusAssignee] = useState(
     () => localStorage.getItem(LS_STATUS_ASSIGNEE_KEY) ?? ''
@@ -270,10 +266,6 @@ export default function App() {
   }, [statusNextAssignment])
 
   useEffect(() => {
-    localStorage.setItem(LS_STATUS_NEXT_COUNT_KEY, statusNextCount)
-  }, [statusNextCount])
-
-  useEffect(() => {
     localStorage.setItem(LS_STATUS_ASSIGNEE_KEY, statusAssignee)
   }, [statusAssignee])
 
@@ -319,6 +311,9 @@ export default function App() {
 
   const teamsMessage = useMemo(() => {
     if (!previousDeadline) return ''
+    if (!messageAssignment.trim()) return ''
+    if (!messageAssignee.trim()) return ''
+    if (tasks.length === 0) return ''
     return formatTeamsMessage({
       previous: previousDeadline,
       next: deadline,
@@ -334,12 +329,12 @@ export default function App() {
 
   const statusMessage = useMemo(() => {
     if (!statusStartAt) return ''
-    const parsedCount = statusNextCount.trim() ? Number(statusNextCount) : undefined
-    const count = Number.isFinite(parsedCount) ? parsedCount : undefined
+    if (!statusCompletedAssignment.trim()) return ''
+    if (!statusNextAssignment.trim()) return ''
+    if (!statusAssignee.trim()) return ''
     return formatStatusMessage({
       completedAssignment: statusCompletedAssignment,
       nextAssignment: statusNextAssignment,
-      nextTaskCount: count,
       assignee: statusAssignee,
       start: statusStartAt,
       deadline,
@@ -348,7 +343,6 @@ export default function App() {
     deadline,
     statusAssignee,
     statusCompletedAssignment,
-    statusNextCount,
     statusNextAssignment,
     statusStartAt,
   ])
@@ -476,14 +470,14 @@ export default function App() {
                 type="text"
                 value={messageAssignment}
                 onChange={(e) => setMessageAssignment(e.target.value)}
-                placeholder="Assignment (optional)"
+                placeholder="Assignment"
                 aria-label="Assignment name"
               />
               <input
                 type="text"
                 value={messageAssignee}
                 onChange={(e) => setMessageAssignee(e.target.value)}
-                placeholder="Confirm by (optional)"
+                placeholder="Confirm by"
                 aria-label="Confirm by"
               />
             </div>
@@ -535,11 +529,11 @@ export default function App() {
             )}
 
             <div className="messagePreview" aria-label="Teams message preview">
-              {teamsMessage || 'Add tasks to generate a Teams message preview.'}
+              {teamsMessage || 'Fill all fields to generate a Teams message preview.'}
             </div>
 
             <div className="messageActions">
-              <button onClick={onCopyTeamsMessage} disabled={!previousDeadline}>
+              <button onClick={onCopyTeamsMessage} disabled={!teamsMessage}>
                 Copy Teams message
               </button>
               {copyStatus === 'copied' && <span className="copyStatus">Copied.</span>}
@@ -577,7 +571,7 @@ export default function App() {
                 type="text"
                 value={statusCompletedAssignment}
                 onChange={(e) => setStatusCompletedAssignment(e.target.value)}
-                placeholder="Completed assignment (short)"
+                placeholder="Completed assignment"
                 aria-label="Completed assignment"
               />
               <input
@@ -588,19 +582,12 @@ export default function App() {
                 aria-label="Next assignment"
               />
               <input
-                type="number"
-                min="0"
-                value={statusNextCount}
-                onChange={(e) => setStatusNextCount(e.target.value)}
-                placeholder="File count (optional)"
-                aria-label="Next assignment file count"
-              />
-              <input
                 type="text"
                 value={statusAssignee}
                 onChange={(e) => setStatusAssignee(e.target.value)}
                 placeholder="Confirm by"
                 aria-label="Status confirm by"
+                className="statusConfirmBy"
               />
               <input
                 type="datetime-local"
@@ -612,7 +599,7 @@ export default function App() {
             </div>
 
             <div className="messagePreview" aria-label="Status message preview">
-              {statusMessage || 'Fill fields to generate a status message.'}
+              {statusMessage || 'Fill all fields to generate a status message.'}
             </div>
 
             <div className="messageActions">

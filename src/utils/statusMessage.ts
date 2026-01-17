@@ -3,23 +3,14 @@ import { formatTeamsDate } from './deadlineHistory'
 export type StatusMessageOptions = {
   completedAssignment: string
   nextAssignment: string
-  nextTaskCount?: number
   assignee: string
   start: Date
   deadline: Date
 }
 
-function formatNextAssignment(nextAssignment: string, count?: number) {
-  const trimmed = nextAssignment.trim()
-  if (!trimmed) return ''
-
-  const countText = Number.isFinite(count) && (count as number) > 0 ? `${count}集` : ''
-  return `${countText}${trimmed}`
-}
-
 export function formatStatusMessage(options: StatusMessageOptions) {
   const completedAssignment = options.completedAssignment.trim()
-  const nextAssignment = formatNextAssignment(options.nextAssignment, options.nextTaskCount)
+  const nextAssignment = options.nextAssignment.trim()
   const assignee = options.assignee.trim()
 
   if (!completedAssignment || !nextAssignment || !assignee) return ''
