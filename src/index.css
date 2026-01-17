@@ -116,42 +116,113 @@ input {
 }
 
 .message {
-  border-radius: 12px;
-  padding: 16px;
-  text-align: center;
+  padding: 6px 0;
+  max-width: 640px;
+  width: 100%;
+  margin: 0 auto;
+  text-align: left;
+}
+
+.message + .message {
+  border-top: 1px solid #2a2f3b;
 }
 
 .messageHeader {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 8px;
-  max-width: 640px;
-  margin: 0 auto;
+  gap: 10px;
   width: 100%;
+  background: transparent;
+  border: 0;
+  color: inherit;
+  padding: 12px 0;
+  text-align: left;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.messageHeader:hover {
+  color: #f0f0f0;
+  background: transparent;
+}
+
+.messageHeader:focus-visible {
+  outline: 2px solid #4b5563;
+  outline-offset: 2px;
+  border-radius: 8px;
+}
+
+.messageTitle {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.messageHeader::after {
+  content: '';
+  width: 16px;
+  height: 16px;
+  background: no-repeat center / 16px 16px;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='%239aa0ad' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M4 6l4 4 4-4'/></svg>");
+  transition: transform 200ms ease;
+}
+
+.message[data-state='open'] .messageHeader::after {
+  transform: rotate(180deg);
+}
+
+.messagePanel {
+  display: grid;
+  grid-template-rows: 0fr;
+  opacity: 0;
+  transition: grid-template-rows 240ms ease, opacity 180ms ease;
+}
+
+.messagePanel[data-state='open'] {
+  grid-template-rows: 1fr;
+  opacity: 1;
+}
+
+.messagePanelInner {
+  overflow: hidden;
+  border-top: 0;
+  padding-top: 0;
+}
+
+.messagePanel[data-state='open'] .messagePanelInner {
+  border-top: 1px solid #2a2f3b;
+  padding-top: 12px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .messagePanel {
+    transition: none;
+  }
+}
+
+.messageFieldset {
+  border: 0;
+  margin: 0;
+  padding: 0;
+  min-inline-size: 0;
 }
 
 .messageBody {
-  margin-top: 10px;
-}
-
-.toggleButton {
-  font-size: 12px;
-  padding: 6px 10px;
+  padding: 0 0 12px;
 }
 
 .messageFields {
   display: grid;
   gap: 8px;
-  max-width: 640px;
-  margin: 0 auto 10px;
+  margin: 0 0 10px;
 }
 
 .statusFields {
   display: grid;
   gap: 8px;
-  max-width: 640px;
-  margin: 0 auto 10px;
+  margin: 0 0 10px;
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
@@ -162,14 +233,12 @@ input {
 .taskFields {
   display: grid;
   gap: 8px;
-  max-width: 640px;
-  margin: 0 auto 10px;
+  margin: 0 0 10px;
   grid-template-columns: 1fr 100px 120px auto;
 }
 
 .taskList {
-  max-width: 640px;
-  margin: 0 auto 10px;
+  margin: 0 0 10px;
   display: grid;
   gap: 6px;
   text-align: left;
@@ -188,8 +257,7 @@ input {
 
 .messagePreview {
   width: 100%;
-  max-width: 640px;
-  margin: 0 auto 10px;
+  margin: 0 0 10px;
   border: 1px solid #2a2f3b;
   border-radius: 10px;
   padding: 10px 12px;

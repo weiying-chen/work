@@ -452,20 +452,25 @@ export default function App() {
         </button>
       </div>
 
-      <div className="message">
-        <div className="messageHeader">
-          <div className="label">Add tasks</div>
-          <button
-            type="button"
-            className="toggleButton"
-            onClick={() => setIsTasksPanelOpen((prev) => !prev)}
-            aria-expanded={isTasksPanelOpen}
-          >
-            {isTasksPanelOpen ? 'Hide' : 'Show'}
-          </button>
-        </div>
-        {isTasksPanelOpen && (
-          <div className="messageBody">
+      <div className="message" data-state={isTasksPanelOpen ? 'open' : 'closed'}>
+        <button
+          type="button"
+          className="messageHeader"
+          onClick={() => setIsTasksPanelOpen((prev) => !prev)}
+          aria-expanded={isTasksPanelOpen}
+          aria-controls="tasks-panel"
+        >
+          <span className="messageTitle">Add tasks</span>
+        </button>
+        <div
+          id="tasks-panel"
+          className="messagePanel"
+          data-state={isTasksPanelOpen ? 'open' : 'closed'}
+          aria-hidden={!isTasksPanelOpen}
+        >
+          <div className="messagePanelInner">
+            <fieldset disabled={!isTasksPanelOpen} className="messageFieldset">
+              <div className="messageBody">
             <div className="messageFields">
               <input
                 type="text"
@@ -542,24 +547,31 @@ export default function App() {
                 <span className="copyStatus">Copy failed. Please copy manually.</span>
               )}
             </div>
+              </div>
+            </fieldset>
           </div>
-        )}
+        </div>
       </div>
 
-      <div className="message">
-        <div className="messageHeader">
-          <div className="label">Assignment status + next deadline</div>
-          <button
-            type="button"
-            className="toggleButton"
-            onClick={() => setIsStatusPanelOpen((prev) => !prev)}
-            aria-expanded={isStatusPanelOpen}
-          >
-            {isStatusPanelOpen ? 'Hide' : 'Show'}
-          </button>
-        </div>
-        {isStatusPanelOpen && (
-          <div className="messageBody">
+      <div className="message" data-state={isStatusPanelOpen ? 'open' : 'closed'}>
+        <button
+          type="button"
+          className="messageHeader"
+          onClick={() => setIsStatusPanelOpen((prev) => !prev)}
+          aria-expanded={isStatusPanelOpen}
+          aria-controls="status-panel"
+        >
+          <span className="messageTitle">Assignment status + next deadline</span>
+        </button>
+        <div
+          id="status-panel"
+          className="messagePanel"
+          data-state={isStatusPanelOpen ? 'open' : 'closed'}
+          aria-hidden={!isStatusPanelOpen}
+        >
+          <div className="messagePanelInner">
+            <fieldset disabled={!isStatusPanelOpen} className="messageFieldset">
+              <div className="messageBody">
             <div className="statusFields">
               <input
                 type="text"
@@ -612,8 +624,10 @@ export default function App() {
                 <span className="copyStatus">Copy failed. Please copy manually.</span>
               )}
             </div>
+              </div>
+            </fieldset>
           </div>
-        )}
+        </div>
       </div>
     </div>
   )
